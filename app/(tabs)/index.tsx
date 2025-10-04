@@ -1,10 +1,33 @@
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Camera, Compass, Clock, Info } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { AfricanPattern } from '@/components/AfricanPattern';
+import { supabase } from '@/lib/supabase';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [featuredArtwork, setFeaturedArtwork] = useState<any>(null);
+
+  useEffect(() => {
+    loadFeaturedArtwork();
+  }, []);
+
+  const loadFeaturedArtwork = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('artworks')
+        .select('id, title, artist, epoch, origin, image_url')
+        .eq('qr_code', 'MCN001')
+        .maybeSingle();
+
+      if (data) {
+        setFeaturedArtwork(data);
+      }
+    } catch (error) {
+      console.error('Error loading featured artwork:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -76,16 +99,23 @@ export default function HomeScreen() {
 
         <View style={styles.featuredSection}>
           <Text style={styles.sectionTitle}>Œuvre du jour</Text>
-          <TouchableOpacity style={styles.featuredCard}>
-            <Image
-              source={{ uri: 'https://cdn.shopify.com/s/files/1/0004/6609/2094/files/merlin_148316589_1948776f-456f-4e63-8233-49bdf0e3d3b7-superJumbo_1024x1024.jpg?v=1558331551' }}
-              style={styles.featuredImage}
-            />
-            <View style={styles.featuredOverlay}>
-              <Text style={styles.featuredTitle}>Masque Gelede</Text>
-              <Text style={styles.featuredOrigin}>Nigeria • XIXe siècle</Text>
-            </View>
-          </TouchableOpacity>
+          {featuredArtwork && (
+            <TouchableOpacity
+              style={styles.featuredCard}
+              onPress={() => router.push(`/artwork/${featuredArtwork.id}`)}
+              activeOpacity={0.9}>
+              <Image
+                source={{ uri: featuredArtwork.image_url }}
+                style={styles.featuredImage}
+              />
+              <View style={styles.featuredOverlay}>
+                <Text style={styles.featuredTitle}>{featuredArtwork.title}</Text>
+                <Text style={styles.featuredOrigin}>
+                  {featuredArtwork.origin} • {featuredArtwork.epoch}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </View>

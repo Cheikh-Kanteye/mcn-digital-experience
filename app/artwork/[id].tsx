@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Volume2, Play, ZoomIn, Heart, Share2, BookmarkPlus } from 'lucide-react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { supabase } from '@/lib/supabase';
 import { getOrCreateUserId } from '@/lib/storage';
 
@@ -226,9 +225,7 @@ export default function ArtworkDetailScreen() {
           </View>
         </View>
 
-        <Animated.View
-          entering={FadeInDown.delay(200)}
-          style={styles.contentContainer}>
+        <View style={styles.contentContainer}>
           <View style={styles.collectionBadge}>
             <Text style={styles.collectionText}>{artwork.collection?.name_fr || ''}</Text>
           </View>
@@ -302,7 +299,7 @@ export default function ArtworkDetailScreen() {
               </View>
             </TouchableOpacity>
           )}
-        </Animated.View>
+        </View>
       </ScrollView>
     </View>
   );

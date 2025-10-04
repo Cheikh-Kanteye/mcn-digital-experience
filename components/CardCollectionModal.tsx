@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { X, Sparkles } from 'lucide-react-native';
-import Animated, { FadeIn, ScaleIn, ZoomIn } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import AfricanPattern from './AfricanPattern';
 
@@ -85,18 +84,14 @@ export default function CardCollectionModal({
           </View>
         </TouchableOpacity>
 
-        <Animated.View
-          entering={FadeIn.duration(500)}
-          style={styles.modalContent}>
+        <View style={styles.modalContent}>
           <View style={styles.header}>
             <Sparkles size={24} color={config.color} strokeWidth={1.5} />
             <Text style={styles.headerTitle}>Nouvelle carte découverte!</Text>
           </View>
 
           {showCard && (
-            <Animated.View
-              entering={ZoomIn.duration(600).springify()}
-              style={styles.cardContainer}>
+            <View style={styles.cardContainer}>
               <View
                 style={[
                   styles.cardGlow,
@@ -153,12 +148,10 @@ export default function CardCollectionModal({
                   <Text style={styles.collectionLabel}>{artwork.collection}</Text>
                 </View>
               </LinearGradient>
-            </Animated.View>
+            </View>
           )}
 
-          <Animated.View
-            entering={FadeIn.delay(800)}
-            style={styles.actions}>
+          <View style={styles.actions}>
             <TouchableOpacity
               style={[
                 styles.collectButton,
@@ -170,8 +163,8 @@ export default function CardCollectionModal({
                 Récupérer la carte
               </Text>
             </TouchableOpacity>
-          </Animated.View>
-        </Animated.View>
+          </View>
+        </View>
       </View>
     </Modal>
   );
