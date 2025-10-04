@@ -1,14 +1,35 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { Scan } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { supabase } from '@/lib/supabase';
+import { getOrCreateUserId } from '@/lib/storage';
+import CardCollectionModal from '@/components/CardCollectionModal';
+
+interface Artwork {
+  id: string;
+  title: string;
+  artist: string;
+  epoch: string;
+  origin: string;
+  rarity: 'common' | 'rare' | 'legendary';
+  image_url: string;
+  collection: string;
+}
 
 export default function ScannerScreen() {
   const [facing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [scannedArtwork, setScannedArtwork] = useState<Artwork | null>(null);
+  const [userId, setUserId] = useState<string>('');
   const router = useRouter();
+
+  useEffect(() => {
+    getOrCreateUserId().then(setUserId);
+  }, []);
 
   if (!permission) {
     return (
@@ -39,31 +60,103 @@ export default function ScannerScreen() {
     );
   }
 
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
+  const handleBarCodeScanned = async ({ type, data }: { type: string; data: string }) => {
     if (scanned) return;
 
     setScanned(true);
-    Alert.alert(
-      'Œuvre détectée',
-      `Code QR scanné: ${data}`,
-      [
-        {
-          text: 'Fermer',
-          onPress: () => setScanned(false),
-          style: 'cancel',
-        },
-        {
-          text: 'Voir l\'œuvre',
-          onPress: () => {
-            setScanned(false);
+
+    try {
+      const { data: artwork, error: artworkError } = await supabase
+        .from('artworks')
+        .select(`
+          id,
+          title,
+          artist,
+          epoch,
+          origin,
+          rarity,
+          image_url,
+          collections:collection_id(name_fr)
+        `)
+        .eq('qr_code', data)
+        .maybeSingle();
+
+      if (artworkError || !artwork) {
+        console.error('Artwork not found:', artworkError);
+        setScanned(false);
+        return;
+      }
+
+      const { data: existingEntry } = await supabase
+        .from('visitor_passport')
+        .select('id, card_collected')
+        .eq('user_id', userId)
+        .eq('artwork_id', artwork.id)
+        .maybeSingle();
+
+      if (existingEntry?.card_collected) {
+        router.push(`/artwork/${artwork.id}`);
+        setScanned(false);
+        return;
+      }
+
+      setScannedArtwork({
+        ...artwork,
+        collection: artwork.collections?.name_fr || '',
+      });
+      setModalVisible(true);
+    } catch (error) {
+      console.error('Error scanning artwork:', error);
+      setScanned(false);
+    }
+  };
+
+  const handleCollectCard = async () => {
+    if (!scannedArtwork || !userId) return;
+
+    try {
+      const { error } = await supabase
+        .from('visitor_passport')
+        .upsert(
+          {
+            user_id: userId,
+            artwork_id: scannedArtwork.id,
+            card_collected: true,
+            scanned_at: new Date().toISOString(),
           },
-        },
-      ]
-    );
+          {
+            onConflict: 'user_id,artwork_id',
+          }
+        );
+
+      if (error) {
+        console.error('Error collecting card:', error);
+        return;
+      }
+
+      setModalVisible(false);
+      setTimeout(() => {
+        router.push(`/artwork/${scannedArtwork.id}`);
+        setScanned(false);
+      }, 300);
+    } catch (error) {
+      console.error('Error in handleCollectCard:', error);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setScanned(false);
   };
 
   return (
     <View style={styles.container}>
+      <CardCollectionModal
+        visible={modalVisible}
+        artwork={scannedArtwork}
+        onClose={handleCloseModal}
+        onCollect={handleCollectCard}
+      />
       <CameraView
         style={styles.camera}
         facing={facing}

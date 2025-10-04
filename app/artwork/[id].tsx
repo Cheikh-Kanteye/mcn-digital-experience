@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Volume2, Play, ZoomIn, Heart, Share2, BookmarkPlus } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { supabase } from '@/lib/supabase';
+import { getOrCreateUserId } from '@/lib/storage';
 
 const { width } = Dimensions.get('window');
 
@@ -13,8 +15,13 @@ interface ArtworkDetails {
   epoch: string;
   origin: string;
   description_fr: string;
+  description_en: string;
+  description_wo: string;
   image_url: string;
-  collection: string;
+  rarity: string;
+  collection: {
+    name_fr: string;
+  };
 }
 
 export default function ArtworkDetailScreen() {
@@ -23,17 +30,155 @@ export default function ArtworkDetailScreen() {
   const [selectedLanguage, setSelectedLanguage] = useState<'FR' | 'EN' | 'WO'>('FR');
   const [isZoomed, setIsZoomed] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [artwork, setArtwork] = useState<ArtworkDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string>('');
+  const [isInPassport, setIsInPassport] = useState(false);
 
-  const artwork: ArtworkDetails = {
-    id: '1',
-    title: 'Masque Gelede',
-    artist: 'Artisan Yoruba',
-    epoch: 'XIXe siècle',
-    origin: 'Nigeria',
-    description_fr: 'Masque cérémoniel utilisé lors des rituels Gelede pour honorer les mères ancestrales. Les motifs colorés et les sculptures représentent la fertilité et le pouvoir féminin. Chaque détail sculpté raconte une histoire profonde de la tradition Yoruba, transmettant des valeurs spirituelles et sociales à travers les générations.',
-    image_url: 'https://images.pexels.com/photos/6463348/pexels-photo-6463348.jpeg',
-    collection: 'Spiritualité et Rites',
+  useEffect(() => {
+    loadArtwork();
+    getOrCreateUserId().then(setUserId);
+  }, [id]);
+
+  useEffect(() => {
+    if (userId && artwork) {
+      checkPassportStatus();
+    }
+  }, [userId, artwork]);
+
+  const loadArtwork = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('artworks')
+        .select(`
+          id,
+          title,
+          artist,
+          epoch,
+          origin,
+          description_fr,
+          description_en,
+          description_wo,
+          image_url,
+          rarity,
+          collections:collection_id(name_fr)
+        `)
+        .eq('id', id)
+        .maybeSingle();
+
+      if (error || !data) {
+        console.error('Error loading artwork:', error);
+        return;
+      }
+
+      setArtwork(data);
+    } catch (error) {
+      console.error('Error in loadArtwork:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const checkPassportStatus = async () => {
+    try {
+      const { data } = await supabase
+        .from('visitor_passport')
+        .select('id, favorite')
+        .eq('user_id', userId)
+        .eq('artwork_id', id)
+        .maybeSingle();
+
+      setIsInPassport(!!data);
+      if (data) {
+        setIsFavorite(data.favorite);
+      }
+    } catch (error) {
+      console.error('Error checking passport status:', error);
+    }
+  };
+
+  const toggleFavorite = async () => {
+    if (!userId || !artwork) return;
+
+    try {
+      const newFavoriteStatus = !isFavorite;
+
+      const { error } = await supabase
+        .from('visitor_passport')
+        .upsert(
+          {
+            user_id: userId,
+            artwork_id: artwork.id,
+            favorite: newFavoriteStatus,
+            card_collected: true,
+          },
+          {
+            onConflict: 'user_id,artwork_id',
+          }
+        );
+
+      if (!error) {
+        setIsFavorite(newFavoriteStatus);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
+  const addToPassport = async () => {
+    if (!userId || !artwork) return;
+
+    try {
+      const { error } = await supabase
+        .from('visitor_passport')
+        .upsert(
+          {
+            user_id: userId,
+            artwork_id: artwork.id,
+            card_collected: true,
+          },
+          {
+            onConflict: 'user_id,artwork_id',
+          }
+        );
+
+      if (!error) {
+        setIsInPassport(true);
+      }
+    } catch (error) {
+      console.error('Error adding to passport:', error);
+    }
+  };
+
+  const getDescription = () => {
+    if (!artwork) return '';
+    switch (selectedLanguage) {
+      case 'FR':
+        return artwork.description_fr;
+      case 'EN':
+        return artwork.description_en;
+      case 'WO':
+        return artwork.description_wo || artwork.description_fr;
+      default:
+        return artwork.description_fr;
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#a67c52" />
+      </View>
+    );
+  }
+
+  if (!artwork) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>Œuvre non trouvée</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -51,7 +196,8 @@ export default function ArtworkDetailScreen() {
 
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}>
+            onPress={() => router.back()}
+            activeOpacity={0.8}>
             <View style={styles.iconButton}>
               <ArrowLeft size={20} color="#c9b8a8" strokeWidth={1.5} />
             </View>
@@ -60,7 +206,8 @@ export default function ArtworkDetailScreen() {
           <View style={styles.imageActions}>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => setIsFavorite(!isFavorite)}>
+              onPress={toggleFavorite}
+              activeOpacity={0.8}>
               <Heart
                 size={18}
                 color={isFavorite ? '#a67c52' : '#c9b8a8'}
@@ -83,7 +230,7 @@ export default function ArtworkDetailScreen() {
           entering={FadeInDown.delay(200)}
           style={styles.contentContainer}>
           <View style={styles.collectionBadge}>
-            <Text style={styles.collectionText}>{artwork.collection}</Text>
+            <Text style={styles.collectionText}>{artwork.collection?.name_fr || ''}</Text>
           </View>
 
           <Text style={styles.title}>{artwork.title}</Text>
@@ -141,15 +288,20 @@ export default function ArtworkDetailScreen() {
 
           <View style={styles.descriptionSection}>
             <Text style={styles.descriptionTitle}>Description</Text>
-            <Text style={styles.descriptionText}>{artwork.description_fr}</Text>
+            <Text style={styles.descriptionText}>{getDescription()}</Text>
           </View>
 
-          <TouchableOpacity style={styles.addToPassportButton}>
-            <View style={styles.passportButtonContent}>
-              <BookmarkPlus size={18} color="#c9b8a8" strokeWidth={1.5} />
-              <Text style={styles.passportButtonText}>Ajouter au passeport</Text>
-            </View>
-          </TouchableOpacity>
+          {!isInPassport && (
+            <TouchableOpacity
+              style={styles.addToPassportButton}
+              onPress={addToPassport}
+              activeOpacity={0.8}>
+              <View style={styles.passportButtonContent}>
+                <BookmarkPlus size={18} color="#c9b8a8" strokeWidth={1.5} />
+                <Text style={styles.passportButtonText}>Ajouter au passeport</Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </Animated.View>
       </ScrollView>
     </View>
@@ -160,6 +312,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0a0a0a',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#0a0a0a',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#8a7d70',
+    fontWeight: '300',
   },
   scrollView: {
     flex: 1,
