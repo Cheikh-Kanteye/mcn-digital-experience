@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { X, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import AfricanPattern from './AfricanPattern';
+import { AfricanPattern } from './AfricanPattern';
 
 const { width } = Dimensions.get('window');
 
@@ -29,21 +29,21 @@ const rarityConfig = {
     label: 'Commun',
     color: '#8a7d70',
     borderColor: '#6b5d50',
-    gradientColors: ['#151515', '#1a1a1a'],
+    gradientColors: ['#151515', '#1a1a1a'] as const,
     glowColor: 'rgba(138, 125, 112, 0.3)',
   },
   rare: {
     label: 'Rare',
     color: '#5a9fd4',
     borderColor: '#4a8fc4',
-    gradientColors: ['#1a2838', '#152030'],
+    gradientColors: ['#1a2838', '#152030'] as const,
     glowColor: 'rgba(90, 159, 212, 0.4)',
   },
   legendary: {
     label: 'Légendaire',
     color: '#d4a574',
     borderColor: '#c49564',
-    gradientColors: ['#2a2318', '#221d13'],
+    gradientColors: ['#2a2318', '#221d13'] as const,
     glowColor: 'rgba(212, 165, 116, 0.5)',
   },
 };
