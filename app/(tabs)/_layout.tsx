@@ -1,5 +1,13 @@
 import { Tabs } from 'expo-router';
-import { Hop as Home, Camera, Bookmark, Compass } from 'lucide-react-native';
+import { View } from 'react-native';
+import {
+  Hop as Home,
+  Camera,
+  Bookmark,
+  Compass,
+  ShoppingBag,
+  QrCode,
+} from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -21,22 +29,14 @@ export default function TabLayout() {
           fontWeight: '400',
           marginTop: 4,
         },
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Accueil',
           tabBarIcon: ({ size, color }) => (
             <Home size={size} color={color} strokeWidth={1.5} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="scanner"
-        options={{
-          title: 'Scanner',
-          tabBarIcon: ({ size, color }) => (
-            <Camera size={size} color={color} strokeWidth={1.5} />
           ),
         }}
       />
@@ -50,11 +50,49 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="scanner"
+        options={{
+          title: '',
+          tabBarShowLabel: false,
+          tabBarIcon: ({ size, color }) => (
+            <View
+              style={{
+                position: 'absolute',
+                width: 50,
+                height: 50,
+                borderRadius: 30,
+                backgroundColor: '#a67c52bb',
+                borderWidth: 2,
+                borderColor: '#a67c52',
+                justifyContent: 'center',
+                alignItems: 'center',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 5,
+              }}
+            >
+              <QrCode size={24} color="#ffffffff" strokeWidth={2} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="passport"
         options={{
           title: 'Passeport',
           tabBarIcon: ({ size, color }) => (
             <Bookmark size={size} color={color} strokeWidth={1.5} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="boutique"
+        options={{
+          title: 'Boutique',
+          tabBarIcon: ({ size, color }) => (
+            <ShoppingBag size={size} color={color} strokeWidth={1.5} />
           ),
         }}
       />

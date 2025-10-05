@@ -1,7 +1,31 @@
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
+// app/(tabs)/artwork/[id].tsx
+import { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  ActivityIndicator,
+  Share,
+  Platform,
+  Alert,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, Volume2, Play, ZoomIn, Heart, Share2, BookmarkPlus } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Heart,
+  Share2,
+  MoreVertical,
+  MapPin,
+  Calendar,
+  Headphones,
+  Play,
+  ChevronDown,
+} from 'lucide-react-native';
+import { Audio } from 'expo-av';
 import { getOrCreateUserId } from '@/lib/storage';
 import { DataService } from '@/lib/dataService';
 
@@ -21,22 +45,371 @@ interface ArtworkDetails {
   collection: {
     name_fr: string;
   };
+  materials?: string;
+  dimensions?: string;
+  provenance?: string;
+  acquisition?: string;
 }
+
+// ========== COMPOSANTS MODULAIRES ==========
+
+// Header avec image et actions
+const ArtworkHeader = ({
+  imageUrl,
+  onBack,
+  isFavorite,
+  onToggleFavorite,
+  onShare,
+}: {
+  imageUrl: string;
+  onBack: () => void;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+  onShare: () => void;
+}) => (
+  <View style={styles.headerContainer}>
+    <Image
+      source={{ uri: imageUrl }}
+      style={styles.headerImage}
+      resizeMode="cover"
+    />
+
+    {/* Actions en haut */}
+    <View style={styles.topActions}>
+      <TouchableOpacity style={styles.topButton} onPress={onBack}>
+        <ArrowLeft size={20} color="#fff" strokeWidth={2} />
+      </TouchableOpacity>
+
+      <View style={styles.topRightActions}>
+        <TouchableOpacity style={styles.topButton} onPress={onToggleFavorite}>
+          <Heart
+            size={20}
+            color="#fff"
+            fill={isFavorite ? '#fff' : 'transparent'}
+            strokeWidth={2}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.topButton} onPress={onShare}>
+          <Share2 size={20} color="#fff" strokeWidth={2} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.topButton}>
+          <MoreVertical size={20} color="#fff" strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
+    </View>
+
+    {/* Badge époque sur l'image */}
+    <View style={styles.epochBadge}>
+      <Text style={styles.epochText}>Époque: XIVe siècle</Text>
+    </View>
+
+    {/* Bouton zoom en bas à droite */}
+    <TouchableOpacity style={styles.zoomButton}>
+      <View style={styles.zoomIcon}>
+        <View style={styles.zoomIconInner} />
+      </View>
+    </TouchableOpacity>
+  </View>
+);
+
+// Titre et informations principales
+const ArtworkTitle = ({
+  title,
+  origin,
+  epoch,
+}: {
+  title: string;
+  origin: string;
+  epoch: string;
+}) => (
+  <View style={styles.titleSection}>
+    <Text style={styles.title}>{title}</Text>
+    <View style={styles.infoRow}>
+      <View style={styles.infoItem}>
+        <MapPin size={14} color="#d4a574" strokeWidth={2} />
+        <Text style={styles.infoText}>{origin}</Text>
+      </View>
+      <View style={styles.infoItem}>
+        <Calendar size={14} color="#d4a574" strokeWidth={2} />
+        <Text style={styles.infoText}>{epoch}</Text>
+      </View>
+    </View>
+  </View>
+);
+
+// Badge collection
+const CollectionBadge = ({ collectionName }: { collectionName: string }) => (
+  <View style={styles.collectionBadge}>
+    <View style={styles.collectionDots}>
+      <View style={[styles.dot, styles.dotOrange]} />
+      <View style={[styles.dot, styles.dotOrange]} />
+      <View style={[styles.dot, styles.dotGray]} />
+    </View>
+    <Text style={styles.collectionText}>{collectionName}</Text>
+  </View>
+);
+
+// Guide audio avec lecteur
+const AudioGuide = ({
+  selectedLanguage,
+  onLanguageChange,
+  isPlaying,
+  onPlayPause,
+  currentTime,
+  duration,
+}: {
+  selectedLanguage: 'FR' | 'EN' | 'WO';
+  onLanguageChange: (lang: 'FR' | 'EN' | 'WO') => void;
+  isPlaying: boolean;
+  onPlayPause: () => void;
+  currentTime: number;
+  duration: number;
+}) => {
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  return (
+    <View style={styles.audioSection}>
+      <View style={styles.audioHeader}>
+        <View style={styles.audioTitleRow}>
+          <View style={styles.audioIconContainer}>
+            <Headphones size={20} color="#d4a574" strokeWidth={2} />
+          </View>
+          <View>
+            <Text style={styles.audioTitle}>Guide Audio</Text>
+            <Text style={styles.audioDuration}>
+              Durée: {formatTime(duration)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.languageTabs}>
+          {(['FR', 'EN', 'WO'] as const).map((lang) => (
+            <TouchableOpacity
+              key={lang}
+              style={[
+                styles.languageTab,
+                selectedLanguage === lang && styles.languageTabActive,
+              ]}
+              onPress={() => onLanguageChange(lang)}
+            >
+              <Text
+                style={[
+                  styles.languageTabText,
+                  selectedLanguage === lang && styles.languageTabTextActive,
+                ]}
+              >
+                {lang}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Lecteur audio */}
+      <View style={styles.audioPlayer}>
+        <TouchableOpacity style={styles.playButton} onPress={onPlayPause}>
+          {isPlaying ? (
+            <View style={styles.pauseIcon}>
+              <View style={styles.pauseBar} />
+              <View style={styles.pauseBar} />
+            </View>
+          ) : (
+            <Play size={16} color="#000" strokeWidth={2} fill="#000" />
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <View
+              style={[styles.progressFill, { width: `${progressPercentage}%` }]}
+            />
+          </View>
+          <View style={styles.timeRow}>
+            <Text style={styles.timeText}>{formatTime(currentTime)}</Text>
+            <Text style={styles.timeText}>{formatTime(duration)}</Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+// Section description
+const DescriptionSection = ({
+  description,
+  isExpanded,
+  onToggleExpand,
+}: {
+  description: string;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+}) => (
+  <View style={styles.descriptionSection}>
+    <Text style={styles.sectionTitle}>Description</Text>
+    <Text
+      style={styles.descriptionText}
+      numberOfLines={isExpanded ? undefined : 4}
+    >
+      {description}
+    </Text>
+    <TouchableOpacity style={styles.readMoreButton} onPress={onToggleExpand}>
+      <Text style={styles.readMoreText}>
+        {isExpanded ? 'Lire moins' : 'Lire la suite'}
+      </Text>
+      <ChevronDown
+        size={16}
+        color="#d4a574"
+        strokeWidth={2}
+        style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}
+      />
+    </TouchableOpacity>
+  </View>
+);
+
+// Détails techniques
+const TechnicalDetails = ({
+  materials,
+  dimensions,
+  provenance,
+  acquisition,
+}: {
+  materials?: string;
+  dimensions?: string;
+  provenance?: string;
+  acquisition?: string;
+}) => (
+  <View style={styles.technicalSection}>
+    <Text style={styles.sectionTitle}>Détails Techniques</Text>
+    <View style={styles.technicalGrid}>
+      <View style={styles.technicalItem}>
+        <Text style={styles.technicalLabel}>Matériaux</Text>
+        <Text style={styles.technicalValue}>
+          {materials || 'Bois, Pigments naturels'}
+        </Text>
+      </View>
+      <View style={styles.technicalItem}>
+        <Text style={styles.technicalLabel}>Dimensions</Text>
+        <Text style={styles.technicalValue}>
+          {dimensions || '45 x 32 x 18 cm'}
+        </Text>
+      </View>
+      <View style={styles.technicalItem}>
+        <Text style={styles.technicalLabel}>Provenance</Text>
+        <Text style={styles.technicalValue}>
+          {provenance || 'Plateau Dogon, Mali'}
+        </Text>
+      </View>
+      <View style={styles.technicalItem}>
+        <Text style={styles.technicalLabel}>Acquisition</Text>
+        <Text style={styles.technicalValue}>
+          {acquisition || 'Don privé, 1967'}
+        </Text>
+      </View>
+    </View>
+  </View>
+);
+
+// Œuvres similaires
+const SimilarArtworks = ({ artworks }: { artworks: any[] }) => (
+  <View style={styles.similarSection}>
+    <Text style={styles.sectionTitle}>Œuvres Similaires</Text>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.similarScroll}
+    >
+      {artworks.map((artwork, index) => (
+        <TouchableOpacity key={index} style={styles.similarCard}>
+          <Image
+            source={{ uri: artwork.image_url }}
+            style={styles.similarImage}
+            resizeMode="cover"
+          />
+          <View style={styles.similarInfo}>
+            <Text style={styles.similarTitle} numberOfLines={1}>
+              {artwork.title}
+            </Text>
+            <Text style={styles.similarEpoch}>{artwork.epoch}</Text>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  </View>
+);
+
+// Bouton d'action principal
+const AddToPassportButton = ({
+  isInPassport,
+  onPress,
+}: {
+  isInPassport: boolean;
+  onPress: () => void;
+}) => (
+  <TouchableOpacity
+    style={[styles.passportButton, isInPassport && styles.passportButtonAdded]}
+    onPress={onPress}
+    disabled={isInPassport}
+  >
+    <Text style={styles.passportButtonText}>
+      {isInPassport ? '✓ Ajouté au Passeport' : 'Ajouter au Passeport'}
+    </Text>
+  </TouchableOpacity>
+);
+
+// ========== COMPOSANT PRINCIPAL ==========
 
 export default function ArtworkDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const [selectedLanguage, setSelectedLanguage] = useState<'FR' | 'EN' | 'WO'>('FR');
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<'FR' | 'EN' | 'WO'>(
+    'FR'
+  );
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [artwork, setArtwork] = useState<ArtworkDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string>('');
   const [isInPassport, setIsInPassport] = useState(false);
 
+  // Audio state
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(270); // 4:30 en secondes
+  const playbackInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Audio URLs par langue (à remplacer par vos vrais URLs)
+  const audioUrls = {
+    FR: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', // Exemple
+    EN: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', // Exemple
+    WO: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', // Exemple
+  };
+
   useEffect(() => {
     loadArtwork();
     getOrCreateUserId().then(setUserId);
+
+    // Configure audio mode
+    Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: true,
+      shouldDuckAndroid: true,
+    });
+
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+      if (playbackInterval.current) {
+        clearInterval(playbackInterval.current);
+      }
+    };
   }, [id]);
 
   useEffect(() => {
@@ -45,15 +418,104 @@ export default function ArtworkDetailScreen() {
     }
   }, [userId, artwork]);
 
+  // Charger l'audio quand la langue change
+  useEffect(() => {
+    loadAudio();
+  }, [selectedLanguage]);
+
+  const loadAudio = async () => {
+    try {
+      // Décharger l'audio précédent
+      if (sound) {
+        await sound.unloadAsync();
+        setIsPlaying(false);
+        setCurrentTime(0);
+      }
+
+      // Charger le nouvel audio
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: audioUrls[selectedLanguage] },
+        { shouldPlay: false },
+        onPlaybackStatusUpdate
+      );
+
+      setSound(newSound);
+    } catch (error) {
+      console.error('Error loading audio:', error);
+    }
+  };
+
+  const onPlaybackStatusUpdate = (status: any) => {
+    if (status.isLoaded) {
+      setDuration(status.durationMillis ? status.durationMillis / 1000 : 270);
+      setCurrentTime(status.positionMillis ? status.positionMillis / 1000 : 0);
+      setIsPlaying(status.isPlaying);
+
+      // Si l'audio est terminé
+      if (status.didJustFinish) {
+        setIsPlaying(false);
+        setCurrentTime(0);
+        sound?.setPositionAsync(0);
+      }
+    }
+  };
+
+  const togglePlayPause = async () => {
+    if (!sound) return;
+
+    try {
+      if (isPlaying) {
+        await sound.pauseAsync();
+      } else {
+        await sound.playAsync();
+      }
+    } catch (error) {
+      console.error('Error toggling playback:', error);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!artwork) return;
+
+    try {
+      // Partage simple avec texte et URL
+      const shareMessage = `Découvrez "${artwork.title}" - ${artwork.artist}\n\nÉpoque: ${artwork.epoch}\nOrigine: ${artwork.origin}\n\nVoir sur l'application Musée`;
+
+      const result = await Share.share(
+        Platform.OS === 'ios'
+          ? {
+              message: shareMessage,
+              title: artwork.title,
+              url: artwork.image_url,
+            }
+          : {
+              message: `${shareMessage}\n\n${artwork.image_url}`,
+              title: artwork.title,
+            }
+      );
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('Shared with activity type:', result.activityType);
+        } else {
+          console.log('Shared successfully');
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share dismissed');
+      }
+    } catch (error: any) {
+      Alert.alert('Erreur', 'Impossible de partager pour le moment');
+      console.error('Error sharing:', error);
+    }
+  };
+
   const loadArtwork = async () => {
     try {
       const data = await DataService.getArtworkWithCollection(id as string);
-
       if (!data) {
         console.error('Error loading artwork');
         return;
       }
-
       setArtwork(data);
     } catch (error) {
       console.error('Error in loadArtwork:', error);
@@ -65,7 +527,6 @@ export default function ArtworkDetailScreen() {
   const checkPassportStatus = async () => {
     try {
       const data = await DataService.getPassportEntry(userId, id as string);
-
       setIsInPassport(!!data);
       if (data) {
         setIsFavorite(data.favorite);
@@ -77,10 +538,8 @@ export default function ArtworkDetailScreen() {
 
   const toggleFavorite = async () => {
     if (!userId || !artwork) return;
-
     try {
       const newFavoriteStatus = !isFavorite;
-
       const success = await DataService.addOrUpdatePassportEntry({
         user_id: userId,
         artwork_id: artwork.id,
@@ -89,7 +548,6 @@ export default function ArtworkDetailScreen() {
         scanned_at: new Date().toISOString(),
         notes: '',
       });
-
       if (success) {
         setIsFavorite(newFavoriteStatus);
       }
@@ -99,8 +557,7 @@ export default function ArtworkDetailScreen() {
   };
 
   const addToPassport = async () => {
-    if (!userId || !artwork) return;
-
+    if (!userId || !artwork || isInPassport) return;
     try {
       const success = await DataService.addOrUpdatePassportEntry({
         user_id: userId,
@@ -110,7 +567,6 @@ export default function ArtworkDetailScreen() {
         favorite: false,
         notes: '',
       });
-
       if (success) {
         setIsInPassport(true);
       }
@@ -136,7 +592,7 @@ export default function ArtworkDetailScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#a67c52" />
+        <ActivityIndicator size="large" color="#d4a574" />
       </View>
     );
   }
@@ -149,358 +605,442 @@ export default function ArtworkDetailScreen() {
     );
   }
 
+  // Données fictives pour les œuvres similaires
+  const similarArtworks = [
+    {
+      title: 'Statuette Bambara',
+      epoch: 'XIIIe siècle',
+      image_url: artwork.image_url,
+    },
+    {
+      title: 'Masque Yoruba',
+      epoch: 'XVe siècle',
+      image_url: artwork.image_url,
+    },
+    {
+      title: 'Fétiche Fang',
+      epoch: 'XIVe siècle',
+      image_url: artwork.image_url,
+    },
+  ];
+
   return (
     <View style={styles.container}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: artwork.image_url }}
-            style={styles.heroImage}
-            resizeMode="cover"
-          />
-          <View style={styles.imageOverlay} />
-
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-            activeOpacity={0.8}>
-            <View style={styles.iconButton}>
-              <ArrowLeft size={20} color="#c9b8a8" strokeWidth={1.5} />
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.imageActions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={toggleFavorite}
-              activeOpacity={0.8}>
-              <Heart
-                size={18}
-                color={isFavorite ? '#a67c52' : '#c9b8a8'}
-                fill={isFavorite ? '#a67c52' : 'transparent'}
-                strokeWidth={1.5}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
-              <Share2 size={18} color="#c9b8a8" strokeWidth={1.5} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => setIsZoomed(!isZoomed)}>
-              <ZoomIn size={18} color="#c9b8a8" strokeWidth={1.5} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        showsVerticalScrollIndicator={false}
+      >
+        <ArtworkHeader
+          imageUrl={artwork.image_url}
+          onBack={() => router.back()}
+          isFavorite={isFavorite}
+          onToggleFavorite={toggleFavorite}
+          onShare={handleShare}
+        />
 
         <View style={styles.contentContainer}>
+          <ArtworkTitle
+            title={artwork.title}
+            origin={artwork.origin}
+            epoch={artwork.epoch}
+          />
+
           {artwork.collection?.name_fr && (
-            <View style={styles.collectionBadge}>
-              <Text style={styles.collectionText}>{artwork.collection.name_fr}</Text>
-            </View>
+            <CollectionBadge collectionName={artwork.collection.name_fr} />
           )}
 
-          <Text style={styles.title}>{artwork.title}</Text>
+          <AudioGuide
+            selectedLanguage={selectedLanguage}
+            onLanguageChange={setSelectedLanguage}
+            isPlaying={isPlaying}
+            onPlayPause={togglePlayPause}
+            currentTime={currentTime}
+            duration={duration}
+          />
 
-          <View style={styles.metadata}>
-            <View style={styles.metadataItem}>
-              <Text style={styles.metadataLabel}>Artiste</Text>
-              <Text style={styles.metadataValue}>{artwork.artist}</Text>
-            </View>
-            <View style={styles.metadataItem}>
-              <Text style={styles.metadataLabel}>Époque</Text>
-              <Text style={styles.metadataValue}>{artwork.epoch}</Text>
-            </View>
-            <View style={styles.metadataItem}>
-              <Text style={styles.metadataLabel}>Origine</Text>
-              <Text style={styles.metadataValue}>{artwork.origin}</Text>
-            </View>
-          </View>
+          <DescriptionSection
+            description={getDescription()}
+            isExpanded={isExpanded}
+            onToggleExpand={() => setIsExpanded(!isExpanded)}
+          />
 
-          <View style={styles.languageSelector}>
-            {(['FR', 'EN', 'WO'] as const).map((lang) => (
-              <TouchableOpacity
-                key={lang}
-                style={[
-                  styles.languageButton,
-                  selectedLanguage === lang && styles.languageButtonActive,
-                ]}
-                onPress={() => setSelectedLanguage(lang)}>
-                <Text
-                  style={[
-                    styles.languageText,
-                    selectedLanguage === lang && styles.languageTextActive,
-                  ]}>
-                  {lang}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <AddToPassportButton
+            isInPassport={isInPassport}
+            onPress={addToPassport}
+          />
 
-          <View style={styles.audioSection}>
-            <TouchableOpacity style={styles.audioButton}>
-              <View style={styles.audioButtonContent}>
-                <Volume2 size={20} color="#a67c52" strokeWidth={1.5} />
-                <Text style={styles.audioButtonText}>Audio guide</Text>
-              </View>
-            </TouchableOpacity>
+          <TechnicalDetails
+            materials={artwork.materials}
+            dimensions={artwork.dimensions}
+            provenance={artwork.provenance}
+            acquisition={artwork.acquisition}
+          />
 
-            <TouchableOpacity style={styles.videoButton}>
-              <View style={styles.videoButtonInner}>
-                <Play size={18} color="#8a7d70" strokeWidth={1.5} />
-                <Text style={styles.videoButtonText}>Vidéo</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.descriptionSection}>
-            <Text style={styles.descriptionTitle}>Description</Text>
-            <Text style={styles.descriptionText}>{getDescription()}</Text>
-          </View>
-
-          {!isInPassport && (
-            <TouchableOpacity
-              style={styles.addToPassportButton}
-              onPress={addToPassport}
-              activeOpacity={0.8}>
-              <View style={styles.passportButtonContent}>
-                <BookmarkPlus size={18} color="#c9b8a8" strokeWidth={1.5} />
-                <Text style={styles.passportButtonText}>Ajouter au passeport</Text>
-              </View>
-            </TouchableOpacity>
-          )}
+          <SimilarArtworks artworks={similarArtworks} />
         </View>
       </ScrollView>
     </View>
   );
 }
 
+// ========== STYLES ==========
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: '#1a1a1a',
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: '#1a1a1a',
     justifyContent: 'center',
     alignItems: 'center',
   },
   errorText: {
-    fontSize: 14,
-    color: '#8a7d70',
-    fontWeight: '300',
+    fontSize: 16,
+    color: '#999',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 30,
+    paddingBottom: 40,
   },
-  imageContainer: {
-    height: 400,
+
+  // Header
+  headerContainer: {
+    height: 380,
     position: 'relative',
+    backgroundColor: '#000',
   },
-  heroImage: {
+  headerImage: {
     width: '100%',
     height: '100%',
   },
-  imageOverlay: {
+  topActions: {
     position: 'absolute',
-    bottom: 0,
+    top: 50,
     left: 0,
     right: 0,
-    height: 100,
-    backgroundColor: 'rgba(10, 10, 10, 0.6)',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    backgroundColor: 'rgba(21, 21, 21, 0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#252525',
-  },
-  imageActions: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    gap: 12,
-  },
-  actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    backgroundColor: 'rgba(21, 21, 21, 0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#252525',
-  },
-  contentContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 24,
-  },
-  collectionBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#151515',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#252525',
-  },
-  collectionText: {
-    fontSize: 10,
-    fontWeight: '400',
-    color: '#8a7d70',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '300',
-    color: '#c9b8a8',
-    marginBottom: 20,
-    lineHeight: 36,
-  },
-  metadata: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    paddingHorizontal: 16,
+  },
+  topButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topRightActions: {
+    flexDirection: 'row',
     gap: 12,
   },
-  metadataItem: {
-    flex: 1,
-    backgroundColor: '#151515',
-    borderRadius: 8,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#252525',
-  },
-  metadataLabel: {
-    fontSize: 10,
-    color: '#6b5d50',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    fontWeight: '400',
-    marginBottom: 6,
-  },
-  metadataValue: {
-    fontSize: 13,
-    color: '#c9b8a8',
-    fontWeight: '300',
-  },
-  languageSelector: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 20,
-  },
-  languageButton: {
+  epochBadge: {
+    position: 'absolute',
+    top: 90,
+    right: 16,
+    backgroundColor: 'rgba(212, 165, 116, 0.9)',
     paddingHorizontal: 16,
     paddingVertical: 8,
+    borderRadius: 20,
+  },
+  epochText: {
+    fontSize: 13,
+    color: '#1a1a1a',
+    fontWeight: '600',
+  },
+  zoomButton: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#d4a574',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomIcon: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: '#1a1a1a',
     borderRadius: 4,
-    backgroundColor: '#151515',
-    borderWidth: 1,
-    borderColor: '#252525',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  languageButtonActive: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#a67c52',
+  zoomIconInner: {
+    width: 12,
+    height: 12,
+    borderWidth: 2,
+    borderColor: '#1a1a1a',
+    borderRadius: 2,
   },
-  languageText: {
-    fontSize: 12,
-    fontWeight: '400',
-    color: '#8a7d70',
+
+  // Content
+  contentContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
-  languageTextActive: {
-    color: '#c9b8a8',
+  titleSection: {
+    marginBottom: 16,
   },
-  audioSection: {
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  infoRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 24,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#999',
+  },
+
+  // Collection Badge
+  collectionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 24,
   },
-  audioButton: {
-    flex: 2,
-    borderRadius: 4,
-    backgroundColor: '#151515',
-    borderWidth: 1,
-    borderColor: '#a67c52',
+  collectionDots: {
+    flexDirection: 'row',
+    gap: 4,
   },
-  audioButtonContent: {
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  dotOrange: {
+    backgroundColor: '#d4a574',
+  },
+  dotGray: {
+    backgroundColor: '#555',
+  },
+  collectionText: {
+    fontSize: 12,
+    color: '#999',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+
+  // Audio Guide
+  audioSection: {
+    backgroundColor: '#242424',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  audioHeader: {
+    marginBottom: 16,
+  },
+  audioTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  audioIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#d4a574',
     justifyContent: 'center',
-    paddingVertical: 16,
-    gap: 10,
-  },
-  audioButtonText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: '#c9b8a8',
-  },
-  videoButton: {
-    flex: 1,
-    borderRadius: 4,
-    backgroundColor: '#151515',
-    borderWidth: 1,
-    borderColor: '#252525',
-  },
-  videoButtonInner: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
+  },
+  audioTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  audioDuration: {
+    fontSize: 13,
+    color: '#999',
+  },
+  languageTabs: {
+    flexDirection: 'row',
     gap: 8,
   },
-  videoButtonText: {
-    fontSize: 12,
-    fontWeight: '400',
-    color: '#8a7d70',
+  languageTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#1a1a1a',
   },
+  languageTabActive: {
+    backgroundColor: '#d4a574',
+  },
+  languageTabText: {
+    fontSize: 12,
+    color: '#999',
+    fontWeight: '600',
+  },
+  languageTabTextActive: {
+    color: '#1a1a1a',
+  },
+  audioPlayer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  playButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#d4a574',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pauseIcon: {
+    flexDirection: 'row',
+    gap: 4,
+    alignItems: 'center',
+  },
+  pauseBar: {
+    width: 3,
+    height: 14,
+    backgroundColor: '#000',
+    borderRadius: 2,
+  },
+  progressContainer: {
+    flex: 1,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#3a3a3a',
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  progressFill: {
+    width: '30%',
+    height: '100%',
+    backgroundColor: '#d4a574',
+  },
+  timeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  timeText: {
+    fontSize: 11,
+    color: '#999',
+  },
+
+  // Description
   descriptionSection: {
     marginBottom: 24,
   },
-  descriptionTitle: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: '#c9b8a8',
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
     marginBottom: 12,
-    letterSpacing: 1,
   },
   descriptionText: {
     fontSize: 14,
-    color: '#8a7d70',
-    lineHeight: 24,
-    fontWeight: '300',
+    color: '#ccc',
+    lineHeight: 22,
+    marginBottom: 8,
   },
-  addToPassportButton: {
-    borderRadius: 4,
-    backgroundColor: '#151515',
-    borderWidth: 1,
-    borderColor: '#a67c52',
-  },
-  passportButtonContent: {
+  readMoreButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 4,
+  },
+  readMoreText: {
+    fontSize: 14,
+    color: '#d4a574',
+    fontWeight: '600',
+  },
+
+  // Passport Button
+  passportButton: {
+    backgroundColor: '#d4a574',
+    borderRadius: 12,
     paddingVertical: 16,
-    gap: 12,
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  passportButtonAdded: {
+    backgroundColor: '#3a3a3a',
   },
   passportButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+
+  // Technical Details
+  technicalSection: {
+    marginBottom: 24,
+  },
+  technicalGrid: {
+    gap: 16,
+  },
+  technicalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a2a',
+  },
+  technicalLabel: {
     fontSize: 14,
-    fontWeight: '400',
-    color: '#c9b8a8',
+    color: '#999',
+  },
+  technicalValue: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '500',
+    textAlign: 'right',
+    flex: 1,
+    marginLeft: 16,
+  },
+
+  // Similar Artworks
+  similarSection: {
+    marginBottom: 24,
+  },
+  similarScroll: {
+    gap: 12,
+    paddingRight: 20,
+  },
+  similarCard: {
+    width: 140,
+    backgroundColor: '#242424',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  similarImage: {
+    width: '100%',
+    height: 160,
+    backgroundColor: '#333',
+  },
+  similarInfo: {
+    padding: 12,
+  },
+  similarTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  similarEpoch: {
+    fontSize: 11,
+    color: '#999',
   },
 });
