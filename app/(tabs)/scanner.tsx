@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { Scan } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -69,21 +69,19 @@ export default function ScannerScreen() {
       const { data: artwork, error: artworkError } = await supabase
         .from('artworks')
         .select(`
-          id,
-          title,
-          artist,
-          epoch,
-          origin,
-          rarity,
-          image_url,
-          collections:collection_id(name_fr)
+          *,
+          collection:collection_id(name_fr)
         `)
         .eq('qr_code', data)
-        .maybeSingle();
+        .single();
 
       if (artworkError || !artwork) {
         console.error('Artwork not found:', artworkError);
-        setScanned(false);
+        Alert.alert(
+          'Œuvre non trouvée',
+          'Le code QR scanné ne correspond à aucune œuvre du musée.',
+          [{ text: 'OK', onPress: () => setScanned(false) }]
+        );
         return;
       }
 
@@ -102,7 +100,7 @@ export default function ScannerScreen() {
 
       setScannedArtwork({
         ...artwork,
-        collection: artwork.collections?.name_fr || '',
+        collection: artwork.collection?.name_fr || '',
       });
       setModalVisible(true);
     } catch (error) {

@@ -50,20 +50,11 @@ export default function ArtworkDetailScreen() {
       const { data, error } = await supabase
         .from('artworks')
         .select(`
-          id,
-          title,
-          artist,
-          epoch,
-          origin,
-          description_fr,
-          description_en,
-          description_wo,
-          image_url,
-          rarity,
-          collections:collection_id(name_fr)
+          *,
+          collection:collection_id(name_fr)
         `)
         .eq('id', id)
-        .maybeSingle();
+        .single();
 
       if (error || !data) {
         console.error('Error loading artwork:', error);
@@ -226,9 +217,11 @@ export default function ArtworkDetailScreen() {
         </View>
 
         <View style={styles.contentContainer}>
-          <View style={styles.collectionBadge}>
-            <Text style={styles.collectionText}>{artwork.collection?.name_fr || ''}</Text>
-          </View>
+          {artwork.collection?.name_fr && (
+            <View style={styles.collectionBadge}>
+              <Text style={styles.collectionText}>{artwork.collection.name_fr}</Text>
+            </View>
+          )}
 
           <Text style={styles.title}>{artwork.title}</Text>
 
