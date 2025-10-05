@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { Scan } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
 import { getOrCreateUserId } from '@/lib/storage';
 import CardCollectionModal from '@/components/CardCollectionModal';
+import { DataService } from '@/lib/dataService';
 
 interface Artwork {
   id: string;
@@ -66,31 +66,15 @@ export default function ScannerScreen() {
     setScanned(true);
 
     try {
-      const { data: artwork, error: artworkError } = await supabase
-        .from('artworks')
-        .select(`
-          *,
-          collection:collection_id(name_fr)
-        `)
-        .eq('qr_code', data)
-        .single();
+      const artwork = await DataService.getArtworkWithCollectionByQRCode(data);
 
-      if (artworkError || !artwork) {
-        console.error('Artwork not found:', artworkError);
-        Alert.alert(
-          'Œuvre non trouvée',
-          'Le code QR scanné ne correspond à aucune œuvre du musée.',
-          [{ text: 'OK', onPress: () => setScanned(false) }]
-        );
+      if (!artwork) {
+        console.error('Artwork not found');
+        setScanned(false);
         return;
       }
 
-      const { data: existingEntry } = await supabase
-        .from('visitor_passport')
-        .select('id, card_collected')
-        .eq('user_id', userId)
-        .eq('artwork_id', artwork.id)
-        .maybeSingle();
+      const existingEntry = await DataService.getPassportEntry(userId, artwork.id);
 
       if (existingEntry?.card_collected) {
         router.push(`/artwork/${artwork.id}`);
@@ -100,7 +84,7 @@ export default function ScannerScreen() {
 
       setScannedArtwork({
         ...artwork,
-        collection: artwork.collection?.name_fr || '',
+        collection: artwork.collections?.name_fr || '',
       });
       setModalVisible(true);
     } catch (error) {
@@ -113,22 +97,17 @@ export default function ScannerScreen() {
     if (!scannedArtwork || !userId) return;
 
     try {
-      const { error } = await supabase
-        .from('visitor_passport')
-        .upsert(
-          {
-            user_id: userId,
-            artwork_id: scannedArtwork.id,
-            card_collected: true,
-            scanned_at: new Date().toISOString(),
-          },
-          {
-            onConflict: 'user_id,artwork_id',
-          }
-        );
+      const success = await DataService.addOrUpdatePassportEntry({
+        user_id: userId,
+        artwork_id: scannedArtwork.id,
+        card_collected: true,
+        scanned_at: new Date().toISOString(),
+        favorite: false,
+        notes: '',
+      });
 
-      if (error) {
-        console.error('Error collecting card:', error);
+      if (!success) {
+        console.error('Error collecting card');
         return;
       }
 

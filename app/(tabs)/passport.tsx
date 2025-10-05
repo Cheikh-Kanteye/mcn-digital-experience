@@ -1,35 +1,95 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { BookmarkCheck, Heart, Calendar, Trash2 } from 'lucide-react-native';
 import { AfricanPattern } from '@/components/AfricanPattern';
+import { DataService } from '@/lib/dataService';
+import { getOrCreateUserId } from '@/lib/storage';
+import { useRouter } from 'expo-router';
 
 interface VisitedArtwork {
   id: string;
   title: string;
   artist: string;
-  image: string;
-  scannedDate: string;
+  image_url: string;
+  scanned_at: string;
   favorite: boolean;
 }
 
 export default function PassportScreen() {
-  const visitedArtworks: VisitedArtwork[] = [
-    {
-      id: '1',
-      title: 'Masque Gelede',
-      artist: 'Artisan Yoruba',
-      image: 'https://images.pexels.com/photos/6463348/pexels-photo-6463348.jpeg',
-      scannedDate: '15 Mars 2025',
-      favorite: true,
-    },
-    {
-      id: '2',
-      title: 'Trône du Royaume Bamoun',
-      artist: 'Artisans du Palais Royal',
-      image: 'https://images.pexels.com/photos/8728557/pexels-photo-8728557.jpeg',
-      scannedDate: '15 Mars 2025',
-      favorite: false,
-    },
-  ];
+  const [visitedArtworks, setVisitedArtworks] = useState<VisitedArtwork[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ total: 0, collected: 0, common: 0, rare: 0, legendary: 0 });
+  const [userId, setUserId] = useState<string>('');
+  const router = useRouter();
+
+  useEffect(() => {
+    loadPassportData();
+  }, []);
+
+  const loadPassportData = async () => {
+    try {
+      const uid = await getOrCreateUserId();
+      setUserId(uid);
+
+      const collectedArtworks = await DataService.getCollectedArtworks(uid);
+      const passportEntries = await DataService.getPassportEntries(uid);
+      const collectionStats = await DataService.getCollectionStats(uid);
+
+      const artworksWithData = collectedArtworks.map((artwork) => {
+        const entry = passportEntries.find((e) => e.artwork_id === artwork.id);
+        return {
+          id: artwork.id,
+          title: artwork.title,
+          artist: artwork.artist,
+          image_url: artwork.image_url,
+          scanned_at: entry?.scanned_at || new Date().toISOString(),
+          favorite: entry?.favorite || false,
+        };
+      });
+
+      setVisitedArtworks(artworksWithData);
+      setStats(collectionStats);
+    } catch (error) {
+      console.error('Error loading passport data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = async (artworkId: string) => {
+    const artwork = visitedArtworks.find((a) => a.id === artworkId);
+    if (!artwork || !userId) return;
+
+    try {
+      const newFavoriteStatus = !artwork.favorite;
+
+      await DataService.addOrUpdatePassportEntry({
+        user_id: userId,
+        artwork_id: artworkId,
+        favorite: newFavoriteStatus,
+        card_collected: true,
+        scanned_at: artwork.scanned_at,
+        notes: '',
+      });
+
+      setVisitedArtworks((prev) =>
+        prev.map((a) =>
+          a.id === artworkId ? { ...a, favorite: newFavoriteStatus } : a
+        )
+      );
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -47,9 +107,9 @@ export default function PassportScreen() {
 
           <View style={styles.statsContainer}>
             <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{visitedArtworks.length}</Text>
+              <Text style={styles.statNumber}>{stats.collected}</Text>
               <Text style={styles.statLabel}>Œuvres</Text>
-              <Text style={styles.statLabel}>visitées</Text>
+              <Text style={styles.statLabel}>collectées</Text>
             </View>
             <View style={styles.statCard}>
               <Text style={styles.statNumber}>
@@ -58,17 +118,21 @@ export default function PassportScreen() {
               <Text style={styles.statLabel}>Favorites</Text>
             </View>
             <View style={styles.statCard}>
-              <Text style={styles.statNumber}>2</Text>
-              <Text style={styles.statLabel}>Collections</Text>
-              <Text style={styles.statLabel}>explorées</Text>
+              <Text style={styles.statNumber}>{stats.legendary}</Text>
+              <Text style={styles.statLabel}>Légendaires</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.artworksContainer}>
-          <Text style={styles.sectionTitle}>Œuvres visitées</Text>
+          <Text style={styles.sectionTitle}>Œuvres collectées</Text>
 
-          {visitedArtworks.length === 0 ? (
+          {loading ? (
+            <View style={styles.emptyState}>
+              <ActivityIndicator size="large" color="#c9b8a8" />
+              <Text style={styles.emptyTitle}>Chargement...</Text>
+            </View>
+          ) : visitedArtworks.length === 0 ? (
             <View style={styles.emptyState}>
               <BookmarkCheck size={48} color="#8a7d70" strokeWidth={1.5} />
               <Text style={styles.emptyTitle}>Aucune œuvre scannée</Text>
@@ -79,9 +143,13 @@ export default function PassportScreen() {
           ) : (
             <View style={styles.artworksList}>
               {visitedArtworks.map((artwork) => (
-                <View key={artwork.id} style={styles.artworkCard}>
+                <TouchableOpacity
+                  key={artwork.id}
+                  style={styles.artworkCard}
+                  onPress={() => router.push(`/artwork/${artwork.id}`)}
+                  activeOpacity={0.8}>
                   <Image
-                    source={{ uri: artwork.image }}
+                    source={{ uri: artwork.image_url }}
                     style={styles.artworkImage}
                   />
                   <View style={styles.artworkInfo}>
@@ -94,7 +162,12 @@ export default function PassportScreen() {
                           {artwork.artist}
                         </Text>
                       </View>
-                      <TouchableOpacity style={styles.favoriteButton}>
+                      <TouchableOpacity
+                        style={styles.favoriteButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(artwork.id);
+                        }}>
                         <Heart
                           size={18}
                           color={artwork.favorite ? '#a67c52' : '#6b5d50'}
@@ -106,14 +179,11 @@ export default function PassportScreen() {
                     <View style={styles.artworkFooter}>
                       <View style={styles.dateContainer}>
                         <Calendar size={12} color="#6b5d50" strokeWidth={1.5} />
-                        <Text style={styles.dateText}>{artwork.scannedDate}</Text>
+                        <Text style={styles.dateText}>{formatDate(artwork.scanned_at)}</Text>
                       </View>
-                      <TouchableOpacity style={styles.deleteButton}>
-                        <Trash2 size={14} color="#6b5d50" strokeWidth={1.5} />
-                      </TouchableOpacity>
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
           )}

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "1",
+    "name_fr": "Royaumes et Empires",
+    "name_en": "Kingdoms and Empires",
+    "name_wo": "Réewum ak Daayam",
+    "description_fr": "Découvrez les grandes civilisations africaines et leurs systèmes de gouvernance",
+    "description_en": "Discover great African civilizations and their governance systems",
+    "description_wo": "Xam ci civilization bu mag yu Afrique ak système yi ñuy jëfandikoo ci gouvernance",
+    "theme": "Histoire",
+    "icon": "👑"
+  },
+  {
+    "id": "2",
+    "name_fr": "Arts et Textiles",
+    "name_en": "Arts and Textiles",
+    "name_wo": "Seen ak Tikaas",
+    "description_fr": "Explorez la richesse des créations artistiques et textiles africaines",
+    "description_en": "Explore the richness of African artistic and textile creations",
+    "description_wo": "Xool richesse bu creation artistique ak textile yu Afrique",
+    "theme": "Art",
+    "icon": "🎨"
+  },
+  {
+    "id": "3",
+    "name_fr": "Spiritualité et Rites",
+    "name_en": "Spirituality and Rituals",
+    "name_wo": "Diine ak Jagleel",
+    "description_fr": "Plongez dans les pratiques spirituelles et rituelles du continent",
+    "description_en": "Dive into the spiritual and ritual practices of the continent",
+    "description_wo": "Dugg ci pratique spirituel ak ritual yu continent bi",
+    "theme": "Culture",
+    "icon": "🕯️"
+  },
+  {
+    "id": "4",
+    "name_fr": "Musique et Instruments",
+    "name_en": "Music and Instruments",
+    "name_wo": "Musig ak Jumtukaay",
+    "description_fr": "Célébrez la diversité musicale africaine à travers les âges",
+    "description_en": "Celebrate African musical diversity through the ages",
+    "description_wo": "Celebrate diversité musical bu Afrique ci yoon yi",
+    "theme": "Musique",
+    "icon": "🥁"
+  }
+]

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import { Camera, Compass, Clock, Info } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { AfricanPattern } from '@/components/AfricanPattern';
-import { supabase } from '@/lib/supabase';
+import { DataService } from '@/lib/dataService';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -15,11 +15,7 @@ export default function HomeScreen() {
 
   const loadFeaturedArtwork = async () => {
     try {
-      const { data, error } = await supabase
-        .from('artworks')
-        .select('id, title, artist, epoch, origin, image_url')
-        .eq('qr_code', 'MCN001')
-        .maybeSingle();
+      const data = await DataService.getArtworkByQRCode('MCN001');
 
       if (data) {
         setFeaturedArtwork(data);

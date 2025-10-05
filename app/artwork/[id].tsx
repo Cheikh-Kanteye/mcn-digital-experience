@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Volume2, Play, ZoomIn, Heart, Share2, BookmarkPlus } from 'lucide-react-native';
-import { supabase } from '@/lib/supabase';
 import { getOrCreateUserId } from '@/lib/storage';
+import { DataService } from '@/lib/dataService';
 
 const { width } = Dimensions.get('window');
 
@@ -47,17 +47,10 @@ export default function ArtworkDetailScreen() {
 
   const loadArtwork = async () => {
     try {
-      const { data, error } = await supabase
-        .from('artworks')
-        .select(`
-          *,
-          collection:collection_id(name_fr)
-        `)
-        .eq('id', id)
-        .single();
+      const data = await DataService.getArtworkWithCollection(id as string);
 
-      if (error || !data) {
-        console.error('Error loading artwork:', error);
+      if (!data) {
+        console.error('Error loading artwork');
         return;
       }
 
@@ -71,12 +64,7 @@ export default function ArtworkDetailScreen() {
 
   const checkPassportStatus = async () => {
     try {
-      const { data } = await supabase
-        .from('visitor_passport')
-        .select('id, favorite')
-        .eq('user_id', userId)
-        .eq('artwork_id', id)
-        .maybeSingle();
+      const data = await DataService.getPassportEntry(userId, id as string);
 
       setIsInPassport(!!data);
       if (data) {
@@ -93,21 +81,16 @@ export default function ArtworkDetailScreen() {
     try {
       const newFavoriteStatus = !isFavorite;
 
-      const { error } = await supabase
-        .from('visitor_passport')
-        .upsert(
-          {
-            user_id: userId,
-            artwork_id: artwork.id,
-            favorite: newFavoriteStatus,
-            card_collected: true,
-          },
-          {
-            onConflict: 'user_id,artwork_id',
-          }
-        );
+      const success = await DataService.addOrUpdatePassportEntry({
+        user_id: userId,
+        artwork_id: artwork.id,
+        favorite: newFavoriteStatus,
+        card_collected: true,
+        scanned_at: new Date().toISOString(),
+        notes: '',
+      });
 
-      if (!error) {
+      if (success) {
         setIsFavorite(newFavoriteStatus);
       }
     } catch (error) {
@@ -119,20 +102,16 @@ export default function ArtworkDetailScreen() {
     if (!userId || !artwork) return;
 
     try {
-      const { error } = await supabase
-        .from('visitor_passport')
-        .upsert(
-          {
-            user_id: userId,
-            artwork_id: artwork.id,
-            card_collected: true,
-          },
-          {
-            onConflict: 'user_id,artwork_id',
-          }
-        );
+      const success = await DataService.addOrUpdatePassportEntry({
+        user_id: userId,
+        artwork_id: artwork.id,
+        card_collected: true,
+        scanned_at: new Date().toISOString(),
+        favorite: false,
+        notes: '',
+      });
 
-      if (!error) {
+      if (success) {
         setIsInPassport(true);
       }
     } catch (error) {

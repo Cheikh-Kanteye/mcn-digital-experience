@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { supabase } from '@/lib/supabase';
 import { AfricanPattern } from '@/components/AfricanPattern';
+import { DataService } from '@/lib/dataService';
 
 interface Collection {
   id: string;
@@ -21,13 +21,8 @@ export default function CollectionsScreen() {
 
   const loadCollections = async () => {
     try {
-      const { data, error } = await supabase
-        .from('collections')
-        .select('*')
-        .order('name_fr', { ascending: true });
-
-      if (error) throw error;
-      setCollections(data || []);
+      const data = await DataService.getAllCollections();
+      setCollections(data);
     } catch (error) {
       console.error('Error loading collections:', error);
     } finally {
