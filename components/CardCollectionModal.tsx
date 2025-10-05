@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Image, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  ImageBackground,
+} from 'react-native';
 import { X, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { AfricanPattern } from './AfricanPattern';
 
 const { width } = Dimensions.get('window');
 
@@ -26,25 +34,34 @@ interface CardCollectionModalProps {
 
 const rarityConfig = {
   common: {
-    label: 'Commun',
-    color: '#8a7d70',
-    borderColor: '#6b5d50',
-    gradientColors: ['#151515', '#1a1a1a'] as const,
-    glowColor: 'rgba(138, 125, 112, 0.3)',
+    label: 'COMMON',
+    color: '#d4a574',
+    textColor: '#d4a574',
+    borderColor: '#d4a574',
+    gradientColors: ['#4a3420', '#2a1d10'] as const,
+    bgColor: '#3a2818',
+    glowColor: 'rgba(212, 165, 116, 0.4)',
+    pattern: require('@/assets/images/pattern-common.png'),
   },
   rare: {
-    label: 'Rare',
-    color: '#5a9fd4',
-    borderColor: '#4a8fc4',
-    gradientColors: ['#1a2838', '#152030'] as const,
-    glowColor: 'rgba(90, 159, 212, 0.4)',
+    label: 'RARE',
+    color: '#7ed957',
+    textColor: '#d4ff00',
+    borderColor: '#7ed957',
+    gradientColors: ['#1a3a20', '#0f2419'] as const,
+    bgColor: '#1a3a2a',
+    glowColor: 'rgba(126, 217, 87, 0.6)',
+    pattern: require('@/assets/images/pattern-rare.png'),
   },
   legendary: {
-    label: 'Légendaire',
-    color: '#d4a574',
-    borderColor: '#c49564',
-    gradientColors: ['#2a2318', '#221d13'] as const,
-    glowColor: 'rgba(212, 165, 116, 0.5)',
+    label: 'LEGENDARY',
+    color: '#60a5fa',
+    textColor: '#ffd700',
+    borderColor: '#60a5fa',
+    gradientColors: ['#1a2e4a', '#0f1d35'] as const,
+    bgColor: '#1a3a5a',
+    glowColor: 'rgba(96, 165, 250, 0.6)',
+    pattern: require('@/assets/images/pattern-legendary.png'),
   },
 };
 
@@ -73,99 +90,134 @@ export default function CardCollectionModal({
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}>
-      <View style={styles.modalOverlay}>
+      onRequestClose={onClose}
+    >
+      <LinearGradient
+        colors={[config.bgColor + 'dd', config.bgColor + 'ff']}
+        style={styles.modalOverlay}
+      >
         <TouchableOpacity
           style={styles.closeButton}
           onPress={onClose}
-          activeOpacity={0.8}>
+          activeOpacity={0.8}
+        >
           <View style={styles.closeButtonInner}>
-            <X size={20} color="#c9b8a8" strokeWidth={1.5} />
+            <X size={20} color="#fff" strokeWidth={2} />
           </View>
         </TouchableOpacity>
 
         <View style={styles.modalContent}>
-          <View style={styles.header}>
-            <Sparkles size={24} color={config.color} strokeWidth={1.5} />
-            <Text style={styles.headerTitle}>Nouvelle carte découverte!</Text>
-          </View>
-
           {showCard && (
             <View style={styles.cardContainer}>
               <View
                 style={[
-                  styles.cardGlow,
-                  { shadowColor: config.glowColor },
-                ]}
-              />
-              <LinearGradient
-                colors={config.gradientColors}
-                style={[
                   styles.card,
-                  { borderColor: config.borderColor },
-                ]}>
-                <View style={styles.cardPattern}>
-                  <AfricanPattern opacity={0.05} />
+                  {
+                    borderColor: config.borderColor,
+                    shadowColor: config.glowColor,
+                    backgroundColor: '#1a1a1a',
+                  },
+                ]}
+              >
+                {/* Pattern de fond en position absolue */}
+                <View style={styles.cardPatternContainer}>
+                  <ImageBackground
+                    source={config.pattern}
+                    style={styles.cardPattern}
+                    imageStyle={styles.cardPatternImage}
+                  />
                 </View>
 
-                <View style={styles.rarityBadge}>
-                  <View
-                    style={[
-                      styles.rarityDot,
-                      { backgroundColor: config.color },
-                    ]}
-                  />
-                  <Text style={[styles.rarityText, { color: config.color }]}>
-                    {config.label}
+                {/* Contenu de la carte avec padding */}
+                <View style={styles.cardContent}>
+                  {/* Header avec "RARITY" */}
+                  <View style={styles.cardHeader}>
+                    <View style={styles.cornerDot} />
+                    <View style={styles.rarityBadgeTop}>
+                      <View style={styles.rarityDiamond}>
+                        <View
+                          style={[
+                            styles.rarityDiamondInner,
+                            { backgroundColor: config.color },
+                          ]}
+                        />
+                      </View>
+                      <Text
+                        style={[styles.rarityLabel, { color: config.color }]}
+                      >
+                        RARITY: {config.label}
+                      </Text>
+                      <View style={styles.rarityDiamond}>
+                        <View
+                          style={[
+                            styles.rarityDiamondInner,
+                            { backgroundColor: config.color },
+                          ]}
+                        />
+                      </View>
+                    </View>
+                    <View style={styles.cornerDot} />
+                  </View>
+
+                  {/* Titre du musée */}
+                  <Text style={styles.museumTitle}>
+                    MUSÉE DES CIVILISATIONS NOIRES
                   </Text>
-                </View>
 
-                <View style={styles.cardImageContainer}>
-                  <Image
-                    source={{ uri: artwork.image_url }}
-                    style={styles.cardImage}
-                    resizeMode="cover"
-                  />
-                  <View
-                    style={[
-                      styles.cardImageBorder,
-                      { borderColor: config.borderColor },
-                    ]}
-                  />
-                </View>
+                  {/* Image de l'artwork avec bordure lumineuse */}
+                  <View style={styles.artworkContainer}>
+                    <View
+                      style={[
+                        styles.artworkBorder,
+                        {
+                          borderColor: config.borderColor,
+                          shadowColor: config.color,
+                        },
+                      ]}
+                    >
+                      <Image
+                        source={{ uri: artwork.image_url }}
+                        style={styles.artworkImage}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  </View>
 
-                <View style={styles.cardInfo}>
-                  <Text style={styles.cardTitle}>{artwork.title}</Text>
-                  <Text style={styles.cardSubtitle}>{artwork.artist}</Text>
-                  <View style={styles.cardMeta}>
-                    <Text style={styles.cardMetaText}>{artwork.epoch}</Text>
-                    <View style={styles.cardMetaDot} />
-                    <Text style={styles.cardMetaText}>{artwork.origin}</Text>
+                  {/* Informations de l'artwork */}
+                  <View style={styles.artworkInfo}>
+                    <Text style={styles.artworkTitle}>{artwork.title}</Text>
+                    <Text style={styles.artworkSubtitle}>
+                      {artwork.origin}, {artwork.epoch}
+                    </Text>
+                  </View>
+
+                  {/* Footer avec propriétaire */}
+                  <View style={styles.cardFooter}>
+                    <View style={styles.cornerDot} />
+                    <View style={styles.ownerSection}>
+                      <Text style={styles.ownerLabel}>PROPRIÉTAIRE:</Text>
+                      <Text style={styles.ownerName}>
+                        NOM DU COLLECTIONNEUR
+                      </Text>
+                    </View>
+                    <View style={styles.cornerDot} />
                   </View>
                 </View>
-
-                <View style={styles.cardFooter}>
-                  <Text style={styles.collectionLabel}>{artwork.collection}</Text>
-                </View>
-              </LinearGradient>
+              </View>
             </View>
           )}
 
           <View style={styles.actions}>
             <TouchableOpacity
-              style={[
-                styles.collectButton,
-                { borderColor: config.color, backgroundColor: config.gradientColors[0] },
-              ]}
+              style={[styles.collectButton, { backgroundColor: config.color }]}
               onPress={onCollect}
-              activeOpacity={0.8}>
-              <Text style={[styles.collectButtonText, { color: config.color }]}>
-                Récupérer la carte
-              </Text>
+              activeOpacity={0.8}
+            >
+              <Text style={styles.collectButtonText}>Récupérer la carte</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </LinearGradient>
     </Modal>
   );
 }
@@ -173,7 +225,6 @@ export default function CardCollectionModal({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
@@ -187,156 +238,177 @@ const styles = StyleSheet.create({
   closeButtonInner: {
     width: 40,
     height: 40,
-    borderRadius: 4,
-    backgroundColor: 'rgba(21, 21, 21, 0.9)',
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#252525',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   modalContent: {
     width: '100%',
     maxWidth: 400,
     alignItems: 'center',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 32,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '400',
-    color: '#c9b8a8',
-    letterSpacing: 0.5,
-  },
   cardContainer: {
     width: '100%',
-    position: 'relative',
     marginBottom: 32,
   },
-  cardGlow: {
-    position: 'absolute',
-    top: -20,
-    left: -20,
-    right: -20,
-    bottom: -20,
-    borderRadius: 12,
+  card: {
+    borderRadius: 20,
+    borderWidth: 3,
+    overflow: 'hidden',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
-    shadowRadius: 30,
+    shadowRadius: 40,
     elevation: 20,
-  },
-  card: {
-    borderRadius: 8,
-    borderWidth: 2,
-    padding: 20,
     position: 'relative',
-    overflow: 'hidden',
   },
-  cardPattern: {
+  cardPatternContainer: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
   },
-  rarityBadge: {
+  cardPattern: {
+    width: '100%',
+    height: '100%',
+  },
+  cardPatternImage: {
+    opacity: 0.15,
+  },
+  cardContent: {
+    padding: 20,
+    position: 'relative',
+    zIndex: 1,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  cornerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  rarityBadgeTop: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 16,
-    zIndex: 1,
   },
-  rarityDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  rarityText: {
-    fontSize: 11,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-  },
-  cardImageContainer: {
-    position: 'relative',
-    marginBottom: 16,
-    zIndex: 1,
-  },
-  cardImage: {
-    width: '100%',
-    height: 240,
-    borderRadius: 4,
-  },
-  cardImageBorder: {
-    position: 'absolute',
-    top: -4,
-    left: -4,
-    right: -4,
-    bottom: -4,
+  rarityDiamond: {
+    width: 12,
+    height: 12,
+    transform: [{ rotate: '45deg' }],
     borderWidth: 1,
-    borderRadius: 6,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  cardInfo: {
+  rarityDiamondInner: {
+    width: 6,
+    height: 6,
+  },
+  rarityLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  museumTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#d4a574',
+    textAlign: 'center',
+    letterSpacing: 1,
+    marginBottom: 20,
+  },
+  artworkContainer: {
     marginBottom: 16,
-    zIndex: 1,
   },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: '400',
-    color: '#c9b8a8',
+  artworkBorder: {
+    borderWidth: 3,
+    borderRadius: 8,
+    padding: 4,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  artworkImage: {
+    width: '100%',
+    height: 280,
+    borderRadius: 4,
+    backgroundColor: '#000',
+  },
+  artworkInfo: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  artworkTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#fff',
+    textAlign: 'center',
     marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  artworkSubtitle: {
+    fontSize: 13,
+    color: '#ccc',
+    textAlign: 'center',
+    textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  cardSubtitle: {
-    fontSize: 13,
-    color: '#8a7d70',
-    marginBottom: 8,
-    fontWeight: '300',
-  },
-  cardMeta: {
+  cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  cardMetaText: {
-    fontSize: 11,
-    color: '#6b5d50',
-    fontWeight: '300',
-  },
-  cardMetaDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: '#6b5d50',
-  },
-  cardFooter: {
+    justifyContent: 'space-between',
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(107, 93, 80, 0.2)',
-    zIndex: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
-  collectionLabel: {
-    fontSize: 10,
-    color: '#6b5d50',
+  ownerSection: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  ownerLabel: {
+    fontSize: 9,
+    color: '#888',
+    letterSpacing: 1.5,
+    marginBottom: 4,
     textTransform: 'uppercase',
-    letterSpacing: 2,
-    fontWeight: '400',
+  },
+  ownerName: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#d4a574',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   actions: {
     width: '100%',
   },
   collectButton: {
-    borderRadius: 4,
-    borderWidth: 2,
+    borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   collectButtonText: {
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
     letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 });

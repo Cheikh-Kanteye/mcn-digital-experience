@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { Scan } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { getOrCreateUserId } from '@/lib/storage';
+import { useAuth } from '@/lib/authContext';
 import CardCollectionModal from '@/components/CardCollectionModal';
 import { DataService } from '@/lib/dataService';
 
@@ -24,12 +24,8 @@ export default function ScannerScreen() {
   const [scanned, setScanned] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [scannedArtwork, setScannedArtwork] = useState<Artwork | null>(null);
-  const [userId, setUserId] = useState<string>('');
+  const { user } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    getOrCreateUserId().then(setUserId);
-  }, []);
 
   if (!permission) {
     return (
@@ -48,11 +44,13 @@ export default function ScannerScreen() {
           </View>
           <Text style={styles.permissionTitle}>Accès à la caméra</Text>
           <Text style={styles.permissionMessage}>
-            Pour scanner les œuvres du musée, nous avons besoin d'accéder à votre caméra.
+            Pour scanner les œuvres du musée, nous avons besoin d'accéder à
+            votre caméra.
           </Text>
           <TouchableOpacity
             style={styles.permissionButton}
-            onPress={requestPermission}>
+            onPress={requestPermission}
+          >
             <Text style={styles.permissionButtonText}>Autoriser</Text>
           </TouchableOpacity>
         </View>
@@ -60,7 +58,13 @@ export default function ScannerScreen() {
     );
   }
 
-  const handleBarCodeScanned = async ({ type, data }: { type: string; data: string }) => {
+  const handleBarCodeScanned = async ({
+    type,
+    data,
+  }: {
+    type: string;
+    data: string;
+  }) => {
     if (scanned) return;
 
     setScanned(true);
@@ -74,7 +78,16 @@ export default function ScannerScreen() {
         return;
       }
 
-      const existingEntry = await DataService.getPassportEntry(userId, artwork.id);
+      if (!user) {
+        console.error('User not authenticated');
+        setScanned(false);
+        return;
+      }
+
+      const existingEntry = await DataService.getPassportEntry(
+        user.id,
+        artwork.id
+      );
 
       if (existingEntry?.card_collected) {
         router.push(`/artwork/${artwork.id}`);
@@ -94,11 +107,11 @@ export default function ScannerScreen() {
   };
 
   const handleCollectCard = async () => {
-    if (!scannedArtwork || !userId) return;
+    if (!scannedArtwork || !user) return;
 
     try {
       const success = await DataService.addOrUpdatePassportEntry({
-        user_id: userId,
+        user_id: user.id,
         artwork_id: scannedArtwork.id,
         card_collected: true,
         scanned_at: new Date().toISOString(),
@@ -140,7 +153,8 @@ export default function ScannerScreen() {
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
         barcodeScannerSettings={{
           barcodeTypes: ['qr'],
-        }}>
+        }}
+      >
         <View style={styles.overlay}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Scanner une œuvre</Text>

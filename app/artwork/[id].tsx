@@ -1,4 +1,3 @@
-// app/(tabs)/artwork/[id].tsx
 import { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -28,6 +27,7 @@ import {
 import { Audio } from 'expo-av';
 import { getOrCreateUserId } from '@/lib/storage';
 import { DataService } from '@/lib/dataService';
+import { theme } from '@/lib/theme';
 
 const { width } = Dimensions.get('window');
 
@@ -77,23 +77,31 @@ const ArtworkHeader = ({
     {/* Actions en haut */}
     <View style={styles.topActions}>
       <TouchableOpacity style={styles.topButton} onPress={onBack}>
-        <ArrowLeft size={20} color="#fff" strokeWidth={2} />
+        <ArrowLeft
+          size={20}
+          color={theme.colors.text.primary}
+          strokeWidth={2}
+        />
       </TouchableOpacity>
 
       <View style={styles.topRightActions}>
         <TouchableOpacity style={styles.topButton} onPress={onToggleFavorite}>
           <Heart
             size={20}
-            color="#fff"
-            fill={isFavorite ? '#fff' : 'transparent'}
+            color={theme.colors.text.primary}
+            fill={isFavorite ? theme.colors.text.primary : 'transparent'}
             strokeWidth={2}
           />
         </TouchableOpacity>
         <TouchableOpacity style={styles.topButton} onPress={onShare}>
-          <Share2 size={20} color="#fff" strokeWidth={2} />
+          <Share2 size={20} color={theme.colors.text.primary} strokeWidth={2} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.topButton}>
-          <MoreVertical size={20} color="#fff" strokeWidth={2} />
+          <MoreVertical
+            size={20}
+            color={theme.colors.text.primary}
+            strokeWidth={2}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -126,11 +134,15 @@ const ArtworkTitle = ({
     <Text style={styles.title}>{title}</Text>
     <View style={styles.infoRow}>
       <View style={styles.infoItem}>
-        <MapPin size={14} color="#d4a574" strokeWidth={2} />
+        <MapPin size={14} color={theme.colors.accent.primary} strokeWidth={2} />
         <Text style={styles.infoText}>{origin}</Text>
       </View>
       <View style={styles.infoItem}>
-        <Calendar size={14} color="#d4a574" strokeWidth={2} />
+        <Calendar
+          size={14}
+          color={theme.colors.accent.primary}
+          strokeWidth={2}
+        />
         <Text style={styles.infoText}>{epoch}</Text>
       </View>
     </View>
@@ -178,7 +190,11 @@ const AudioGuide = ({
       <View style={styles.audioHeader}>
         <View style={styles.audioTitleRow}>
           <View style={styles.audioIconContainer}>
-            <Headphones size={20} color="#d4a574" strokeWidth={2} />
+            <Headphones
+              size={20}
+              color={theme.colors.accent.primary}
+              strokeWidth={2}
+            />
           </View>
           <View>
             <Text style={styles.audioTitle}>Guide Audio</Text>
@@ -220,7 +236,12 @@ const AudioGuide = ({
               <View style={styles.pauseBar} />
             </View>
           ) : (
-            <Play size={16} color="#000" strokeWidth={2} fill="#000" />
+            <Play
+              size={16}
+              color={theme.colors.background.primary}
+              strokeWidth={2}
+              fill={theme.colors.background.primary}
+            />
           )}
         </TouchableOpacity>
 
@@ -264,7 +285,7 @@ const DescriptionSection = ({
       </Text>
       <ChevronDown
         size={16}
-        color="#d4a574"
+        color={theme.colors.accent.primary}
         strokeWidth={2}
         style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}
       />
@@ -433,11 +454,9 @@ export default function ArtworkDetailScreen() {
       }
 
       // Charger le nouvel audio
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: audioUrls[selectedLanguage] },
-        { shouldPlay: false },
-        onPlaybackStatusUpdate
-      );
+      const newSound = new Audio.Sound();
+      await newSound.loadAsync({ uri: audioUrls[selectedLanguage] });
+      newSound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
 
       setSound(newSound);
     } catch (error) {
@@ -592,7 +611,7 @@ export default function ArtworkDetailScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#d4a574" />
+        <ActivityIndicator size="large" color={theme.colors.accent.primary} />
       </View>
     );
   }
@@ -689,17 +708,17 @@ export default function ArtworkDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: theme.colors.background.primary,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: theme.colors.background.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   errorText: {
     fontSize: 16,
-    color: '#999',
+    color: theme.colors.text.secondary,
   },
   scrollView: {
     flex: 1,
@@ -712,7 +731,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     height: 380,
     position: 'relative',
-    backgroundColor: '#000',
+    backgroundColor: theme.colors.background.dark,
   },
   headerImage: {
     width: '100%',
@@ -731,7 +750,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: theme.colors.ui.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -743,14 +762,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 90,
     right: 16,
-    backgroundColor: 'rgba(212, 165, 116, 0.9)',
+    backgroundColor: theme.colors.ui.glass,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
   epochText: {
     fontSize: 13,
-    color: '#1a1a1a',
+    color: theme.colors.background.primary,
     fontWeight: '600',
   },
   zoomButton: {
@@ -760,7 +779,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#d4a574',
+    backgroundColor: theme.colors.accent.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -768,7 +787,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: '#1a1a1a',
+    borderColor: theme.colors.background.primary,
     borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
@@ -777,7 +796,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderWidth: 2,
-    borderColor: '#1a1a1a',
+    borderColor: theme.colors.background.primary,
     borderRadius: 2,
   },
 
@@ -792,7 +811,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.colors.text.primary,
     marginBottom: 12,
   },
   infoRow: {
@@ -806,7 +825,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#999',
+    color: theme.colors.text.secondary,
   },
 
   // Collection Badge
@@ -826,21 +845,21 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   dotOrange: {
-    backgroundColor: '#d4a574',
+    backgroundColor: theme.colors.accent.primary,
   },
   dotGray: {
-    backgroundColor: '#555',
+    backgroundColor: theme.colors.special.dotGray,
   },
   collectionText: {
     fontSize: 12,
-    color: '#999',
+    color: theme.colors.text.secondary,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
 
   // Audio Guide
   audioSection: {
-    backgroundColor: '#242424',
+    backgroundColor: theme.colors.background.tertiary,
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -858,18 +877,18 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#d4a574',
+    backgroundColor: theme.colors.accent.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   audioTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.colors.text.primary,
   },
   audioDuration: {
     fontSize: 13,
-    color: '#999',
+    color: theme.colors.text.secondary,
   },
   languageTabs: {
     flexDirection: 'row',
@@ -879,18 +898,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: theme.colors.background.primary,
   },
   languageTabActive: {
-    backgroundColor: '#d4a574',
+    backgroundColor: theme.colors.accent.primary,
   },
   languageTabText: {
     fontSize: 12,
-    color: '#999',
+    color: theme.colors.text.secondary,
     fontWeight: '600',
   },
   languageTabTextActive: {
-    color: '#1a1a1a',
+    color: theme.colors.background.primary,
   },
   audioPlayer: {
     flexDirection: 'row',
@@ -901,7 +920,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#d4a574',
+    backgroundColor: theme.colors.accent.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -913,7 +932,7 @@ const styles = StyleSheet.create({
   pauseBar: {
     width: 3,
     height: 14,
-    backgroundColor: '#000',
+    backgroundColor: theme.colors.background.primary,
     borderRadius: 2,
   },
   progressContainer: {
@@ -921,7 +940,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 4,
-    backgroundColor: '#3a3a3a',
+    backgroundColor: theme.colors.ui.inactive,
     borderRadius: 2,
     overflow: 'hidden',
     marginBottom: 4,
@@ -929,7 +948,7 @@ const styles = StyleSheet.create({
   progressFill: {
     width: '30%',
     height: '100%',
-    backgroundColor: '#d4a574',
+    backgroundColor: theme.colors.accent.primary,
   },
   timeRow: {
     flexDirection: 'row',
@@ -937,7 +956,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 11,
-    color: '#999',
+    color: theme.colors.text.secondary,
   },
 
   // Description
@@ -947,12 +966,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.colors.text.primary,
     marginBottom: 12,
   },
   descriptionText: {
     fontSize: 14,
-    color: '#ccc',
+    color: theme.colors.text.tertiary,
     lineHeight: 22,
     marginBottom: 8,
   },
@@ -963,25 +982,25 @@ const styles = StyleSheet.create({
   },
   readMoreText: {
     fontSize: 14,
-    color: '#d4a574',
+    color: theme.colors.accent.primary,
     fontWeight: '600',
   },
 
   // Passport Button
   passportButton: {
-    backgroundColor: '#d4a574',
+    backgroundColor: theme.colors.accent.primary,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 24,
   },
   passportButtonAdded: {
-    backgroundColor: '#3a3a3a',
+    backgroundColor: theme.colors.ui.inactive,
   },
   passportButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: theme.colors.background.primary,
   },
 
   // Technical Details
@@ -996,15 +1015,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#2a2a2a',
+    borderBottomColor: theme.colors.ui.border,
   },
   technicalLabel: {
     fontSize: 14,
-    color: '#999',
+    color: theme.colors.text.secondary,
   },
   technicalValue: {
     fontSize: 14,
-    color: '#fff',
+    color: theme.colors.text.primary,
     fontWeight: '500',
     textAlign: 'right',
     flex: 1,
@@ -1021,14 +1040,14 @@ const styles = StyleSheet.create({
   },
   similarCard: {
     width: 140,
-    backgroundColor: '#242424',
+    backgroundColor: theme.colors.background.tertiary,
     borderRadius: 12,
     overflow: 'hidden',
   },
   similarImage: {
     width: '100%',
     height: 160,
-    backgroundColor: '#333',
+    backgroundColor: theme.colors.background.secondary,
   },
   similarInfo: {
     padding: 12,
@@ -1036,11 +1055,11 @@ const styles = StyleSheet.create({
   similarTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   similarEpoch: {
     fontSize: 11,
-    color: '#999',
+    color: theme.colors.text.secondary,
   },
 });

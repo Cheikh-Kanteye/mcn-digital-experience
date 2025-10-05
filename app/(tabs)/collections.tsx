@@ -12,6 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Crown, ArrowRight, Search } from 'lucide-react-native';
 import { DataService } from '@/lib/dataService';
+import { theme, getThemeColor } from '@/lib/theme';
 
 const { width } = Dimensions.get('window');
 
@@ -246,11 +247,11 @@ export default function CollectionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: theme.colors.background.primary,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: theme.colors.background.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -263,18 +264,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 20,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: theme.colors.background.primary,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.colors.text.primary,
   },
   searchButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(100, 80, 60, 0.3)',
+    backgroundColor: theme.colors.ui.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -294,25 +295,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: theme.colors.background.secondary,
   },
   categoryButtonActive: {
-    backgroundColor: '#d4a574',
+    backgroundColor: theme.colors.accent.primary,
   },
   categoryText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#999',
+    color: theme.colors.text.secondary,
   },
   categoryTextActive: {
-    color: '#1a1a1a',
+    color: theme.colors.background.primary,
   },
 
   // Featured Card
   featuredCard: {
     marginHorizontal: 20,
     marginBottom: 32,
-    backgroundColor: '#64503c',
+    backgroundColor: theme.colors.special.featured,
     borderRadius: 16,
     padding: 20,
   },
@@ -325,18 +326,18 @@ const styles = StyleSheet.create({
   featuredBadge: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#d4a574',
+    color: theme.colors.accent.primary,
     letterSpacing: 1,
   },
   featuredTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.colors.text.primary,
     marginBottom: 8,
   },
   featuredDescription: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: theme.colors.special.whiteAlpha,
     lineHeight: 20,
     marginBottom: 16,
   },
@@ -348,10 +349,10 @@ const styles = StyleSheet.create({
   artworkCount: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#d4a574',
+    color: theme.colors.accent.primary,
   },
   exploreButton: {
-    backgroundColor: '#d4a574',
+    backgroundColor: theme.colors.accent.primary,
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 20,
@@ -359,7 +360,7 @@ const styles = StyleSheet.create({
   exploreButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: theme.colors.background.primary,
   },
 
   // Section Header
@@ -370,12 +371,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: 13,
-    color: '#999',
+    color: theme.colors.text.secondary,
   },
 
   // Collections Grid
@@ -386,12 +387,12 @@ const styles = StyleSheet.create({
   },
   collectionCard: {
     flexDirection: 'row',
-    backgroundColor: '#242424',
+    backgroundColor: theme.colors.background.tertiary,
     borderRadius: 12,
     padding: 16,
     gap: 16,
     borderWidth: 1,
-    borderColor: '#2a2a2a',
+    borderColor: theme.colors.ui.border,
   },
   collectionIconContainer: {
     width: 80,
@@ -410,7 +411,7 @@ const styles = StyleSheet.create({
   collectionName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   collectionThemeContainer: {
@@ -426,7 +427,7 @@ const styles = StyleSheet.create({
   },
   collectionTheme: {
     fontSize: 11,
-    color: '#999',
+    color: theme.colors.text.secondary,
     textTransform: 'uppercase',
     letterSpacing: 1,
     fontWeight: '600',
@@ -440,7 +441,7 @@ const styles = StyleSheet.create({
   collectionDescription: {
     flex: 1,
     fontSize: 12,
-    color: '#999',
+    color: theme.colors.text.secondary,
     lineHeight: 16,
   },
 
@@ -450,11 +451,11 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   infoCard: {
-    backgroundColor: '#242424',
+    backgroundColor: theme.colors.background.tertiary,
     borderRadius: 12,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#2a2a2a',
+    borderColor: theme.colors.ui.border,
     alignItems: 'center',
   },
   infoIcon: {
@@ -464,13 +465,13 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.colors.text.primary,
     marginBottom: 8,
     textAlign: 'center',
   },
   infoText: {
     fontSize: 14,
-    color: '#999',
+    color: theme.colors.text.secondary,
     lineHeight: 22,
     textAlign: 'center',
   },

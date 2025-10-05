@@ -1,5 +1,4 @@
-import artworksData from '@/data/artworks.json';
-import collectionsData from '@/data/collections.json';
+import { supabase } from './supabase';
 import { getOrCreateUserId } from './storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -49,28 +48,57 @@ interface PassportEntry {
 
 export const DataService = {
   async getAllArtworks(): Promise<Artwork[]> {
-    return artworksData as Artwork[];
+    const { data, error } = await supabase.from('artworks').select('*');
+    if (error) {
+      console.error('Error fetching artworks:', error);
+      return [];
+    }
+    return data as Artwork[];
   },
 
   async getArtworkById(id: string): Promise<Artwork | null> {
-    const artwork = artworksData.find((a) => a.id === id);
-    return artwork ? (artwork as Artwork) : null;
+    const { data, error } = await supabase
+      .from('artworks')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error) {
+      console.error('Error fetching artwork by id:', error);
+      return null;
+    }
+    return data as Artwork;
   },
 
   async getArtworkByQRCode(qrCode: string): Promise<Artwork | null> {
-    const artwork = artworksData.find((a) => a.qr_code === qrCode);
-    return artwork ? (artwork as Artwork) : null;
+    const { data, error } = await supabase
+      .from('artworks')
+      .select('*')
+      .eq('qr_code', qrCode)
+      .single();
+    if (error) {
+      console.error('Error fetching artwork by QR code:', error);
+      return null;
+    }
+    return data as Artwork;
   },
 
   async getArtworkWithCollection(id: string): Promise<any> {
     const artwork = await this.getArtworkById(id);
     if (!artwork) return null;
 
-    const collection = collectionsData.find((c) => c.id === artwork.collection_id);
+    const { data: collection, error } = await supabase
+      .from('collections')
+      .select('*')
+      .eq('id', artwork.collection_id)
+      .single();
+    if (error) {
+      console.error('Error fetching collection:', error);
+      return { ...artwork, collection: null };
+    }
 
     return {
       ...artwork,
-      collections: collection || null,
+      collection: collection || null,
     };
   },
 
@@ -78,73 +106,105 @@ export const DataService = {
     const artwork = await this.getArtworkByQRCode(qrCode);
     if (!artwork) return null;
 
-    const collection = collectionsData.find((c) => c.id === artwork.collection_id);
+    const { data: collection, error } = await supabase
+      .from('collections')
+      .select('*')
+      .eq('id', artwork.collection_id)
+      .single();
+    if (error) {
+      console.error('Error fetching collection:', error);
+      return { ...artwork, collection: null };
+    }
 
     return {
       ...artwork,
-      collections: collection || null,
+      collection: collection || null,
     };
   },
 
   async getAllCollections(): Promise<Collection[]> {
-    return collectionsData as Collection[];
+    const { data, error } = await supabase.from('collections').select('*');
+    if (error) {
+      console.error('Error fetching collections:', error);
+      return [];
+    }
+    return data as Collection[];
   },
 
   async getCollectionById(id: string): Promise<Collection | null> {
-    const collection = collectionsData.find((c) => c.id === id);
-    return collection ? (collection as Collection) : null;
+    const { data, error } = await supabase
+      .from('collections')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error) {
+      console.error('Error fetching collection by id:', error);
+      return null;
+    }
+    return data as Collection;
   },
 
   async getArtworksByCollectionId(collectionId: string): Promise<Artwork[]> {
-    return artworksData.filter((a) => a.collection_id === collectionId) as Artwork[];
+    const { data, error } = await supabase
+      .from('artworks')
+      .select('*')
+      .eq('collection_id', collectionId);
+    if (error) {
+      console.error('Error fetching artworks by collection id:', error);
+      return [];
+    }
+    return data as Artwork[];
   },
 
   async getPassportEntries(userId: string): Promise<PassportEntry[]> {
     try {
-      const data = await AsyncStorage.getItem(PASSPORT_KEY);
-      if (!data) return [];
-
-      const allEntries: PassportEntry[] = JSON.parse(data);
-      return allEntries.filter((entry) => entry.user_id === userId);
+      const { data, error } = await supabase
+        .from('visitor_passport')
+        .select('*')
+        .eq('user_id', userId);
+      if (error) {
+        console.error('Error loading passport entries:', error);
+        return [];
+      }
+      return data as PassportEntry[];
     } catch (error) {
       console.error('Error loading passport entries:', error);
       return [];
     }
   },
 
-  async getPassportEntry(userId: string, artworkId: string): Promise<PassportEntry | null> {
+  async getPassportEntry(
+    userId: string,
+    artworkId: string
+  ): Promise<PassportEntry | null> {
     try {
-      const entries = await this.getPassportEntries(userId);
-      return entries.find((e) => e.artwork_id === artworkId) || null;
+      const { data, error } = await supabase
+        .from('visitor_passport')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('artwork_id', artworkId);
+      if (error) {
+        console.error('Error loading passport entry:', error);
+        return null;
+      }
+      return data && data.length > 0 ? (data[0] as PassportEntry) : null;
     } catch (error) {
       console.error('Error loading passport entry:', error);
       return null;
     }
   },
 
-  async addOrUpdatePassportEntry(entry: Omit<PassportEntry, 'id'>): Promise<boolean> {
+  async addOrUpdatePassportEntry(
+    entry: Omit<PassportEntry, 'id'>
+  ): Promise<boolean> {
     try {
-      const data = await AsyncStorage.getItem(PASSPORT_KEY);
-      let allEntries: PassportEntry[] = data ? JSON.parse(data) : [];
-
-      const existingIndex = allEntries.findIndex(
-        (e) => e.user_id === entry.user_id && e.artwork_id === entry.artwork_id
-      );
-
-      if (existingIndex >= 0) {
-        allEntries[existingIndex] = {
-          ...allEntries[existingIndex],
-          ...entry,
-        };
-      } else {
-        const newEntry: PassportEntry = {
-          id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          ...entry,
-        };
-        allEntries.push(newEntry);
+      const { data, error } = await supabase
+        .from('visitor_passport')
+        .upsert(entry, { onConflict: 'user_id,artwork_id' });
+      if (error) {
+        console.error('Error saving passport entry:', error);
+        return false;
       }
-
-      await AsyncStorage.setItem(PASSPORT_KEY, JSON.stringify(allEntries));
       return true;
     } catch (error) {
       console.error('Error saving passport entry:', error);
@@ -158,8 +218,17 @@ export const DataService = {
       const collectedIds = entries
         .filter((e) => e.card_collected)
         .map((e) => e.artwork_id);
+      if (collectedIds.length === 0) return [];
 
-      return artworksData.filter((a) => collectedIds.includes(a.id)) as Artwork[];
+      const { data, error } = await supabase
+        .from('artworks')
+        .select('*')
+        .in('id', collectedIds);
+      if (error) {
+        console.error('Error loading collected artworks:', error);
+        return [];
+      }
+      return data as Artwork[];
     } catch (error) {
       console.error('Error loading collected artworks:', error);
       return [];
@@ -172,8 +241,17 @@ export const DataService = {
       const favoriteIds = entries
         .filter((e) => e.favorite)
         .map((e) => e.artwork_id);
+      if (favoriteIds.length === 0) return [];
 
-      return artworksData.filter((a) => favoriteIds.includes(a.id)) as Artwork[];
+      const { data, error } = await supabase
+        .from('artworks')
+        .select('*')
+        .in('id', favoriteIds);
+      if (error) {
+        console.error('Error loading favorite artworks:', error);
+        return [];
+      }
+      return data as Artwork[];
     } catch (error) {
       console.error('Error loading favorite artworks:', error);
       return [];
@@ -189,18 +267,32 @@ export const DataService = {
   }> {
     try {
       const collectedArtworks = await this.getCollectedArtworks(userId);
+      const { data: allArtworks, error } = await supabase
+        .from('artworks')
+        .select('id, rarity');
+      if (error) {
+        console.error('Error fetching all artworks for stats:', error);
+        return {
+          total: 0,
+          collected: 0,
+          common: 0,
+          rare: 0,
+          legendary: 0,
+        };
+      }
 
       return {
-        total: artworksData.length,
+        total: allArtworks.length,
         collected: collectedArtworks.length,
         common: collectedArtworks.filter((a) => a.rarity === 'common').length,
         rare: collectedArtworks.filter((a) => a.rarity === 'rare').length,
-        legendary: collectedArtworks.filter((a) => a.rarity === 'legendary').length,
+        legendary: collectedArtworks.filter((a) => a.rarity === 'legendary')
+          .length,
       };
     } catch (error) {
       console.error('Error calculating collection stats:', error);
       return {
-        total: artworksData.length,
+        total: 0,
         collected: 0,
         common: 0,
         rare: 0,

@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
 import { View } from 'react-native';
 import {
   Hop as Home,
@@ -8,8 +8,31 @@ import {
   ShoppingBag,
   QrCode,
 } from 'lucide-react-native';
+import { useAuth } from '@/lib/authContext';
+import { ActivityIndicator } from 'react-native';
 
 export default function TabLayout() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#0a0a0a',
+        }}
+      >
+        <ActivityIndicator size="large" color="#c9b8a8" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return <Redirect href="/auth/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{
