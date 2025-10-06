@@ -24,7 +24,7 @@ import {
   Play,
   ChevronDown,
 } from 'lucide-react-native';
-import { Audio } from 'expo-av';
+import { setAudioModeAsync } from 'expo-audio';
 import { getOrCreateUserId } from '@/lib/storage';
 import { DataService } from '@/lib/dataService';
 import { theme } from '@/lib/theme';
@@ -400,7 +400,7 @@ export default function ArtworkDetailScreen() {
   const [isInPassport, setIsInPassport] = useState(false);
 
   // Audio state
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [sound, setSound] = useState<any>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(270); // 4:30 en secondes
   const playbackInterval = useRef<NodeJS.Timeout | null>(null);
@@ -417,10 +417,8 @@ export default function ArtworkDetailScreen() {
     getOrCreateUserId().then(setUserId);
 
     // Configure audio mode
-    Audio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: true,
-      shouldDuckAndroid: true,
+    setAudioModeAsync({
+      playsInSilentMode: true,
     });
 
     return () => {
@@ -454,11 +452,13 @@ export default function ArtworkDetailScreen() {
       }
 
       // Charger le nouvel audio
-      const newSound = new Audio.Sound();
-      await newSound.loadAsync({ uri: audioUrls[selectedLanguage] });
-      newSound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
+      // TODO: Fix audio API for expo-audio@1.0.13
+      // const { sound: newSound } = await Audio.createSoundAsync({
+      //   uri: audioUrls[selectedLanguage],
+      // });
+      // newSound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
 
-      setSound(newSound);
+      // setSound(newSound);
     } catch (error) {
       console.error('Error loading audio:', error);
     }

@@ -15,7 +15,7 @@ interface Artwork {
   origin: string;
   rarity: 'common' | 'rare' | 'legendary';
   image_url: string;
-  collection: string;
+  collection_id: string;
 }
 
 export default function ScannerScreen() {
@@ -95,10 +95,7 @@ export default function ScannerScreen() {
         return;
       }
 
-      setScannedArtwork({
-        ...artwork,
-        collection: artwork.collections?.name_fr || '',
-      });
+      setScannedArtwork(artwork);
       setModalVisible(true);
     } catch (error) {
       console.error('Error scanning artwork:', error);
@@ -154,36 +151,35 @@ export default function ScannerScreen() {
         barcodeScannerSettings={{
           barcodeTypes: ['qr'],
         }}
-      >
-        <View style={styles.overlay}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Scanner une œuvre</Text>
-            <Text style={styles.headerSubtitle}>
-              Pointez la caméra vers le code QR
-            </Text>
-          </View>
+      />
+      <View style={styles.overlay}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Scanner une œuvre</Text>
+          <Text style={styles.headerSubtitle}>
+            Pointez la caméra vers le code QR
+          </Text>
+        </View>
 
-          <View style={styles.scanArea}>
-            <View style={styles.scanFrame}>
-              <View style={[styles.corner, styles.topLeft]} />
-              <View style={[styles.corner, styles.topRight]} />
-              <View style={[styles.corner, styles.bottomLeft]} />
-              <View style={[styles.corner, styles.bottomRight]} />
-            </View>
-          </View>
-
-          <View style={styles.footer}>
-            <View style={styles.instructionCard}>
-              <Text style={styles.instructionText}>
-                Alignez le code QR dans le cadre
-              </Text>
-              <Text style={styles.instructionSubtext}>
-                Le scan se fera automatiquement
-              </Text>
-            </View>
+        <View style={styles.scanArea}>
+          <View style={styles.scanFrame}>
+            <View style={[styles.corner, styles.topLeft]} />
+            <View style={[styles.corner, styles.topRight]} />
+            <View style={[styles.corner, styles.bottomLeft]} />
+            <View style={[styles.corner, styles.bottomRight]} />
           </View>
         </View>
-      </CameraView>
+
+        <View style={styles.footer}>
+          <View style={styles.instructionCard}>
+            <Text style={styles.instructionText}>
+              Alignez le code QR dans le cadre
+            </Text>
+            <Text style={styles.instructionSubtext}>
+              Le scan se fera automatiquement
+            </Text>
+          </View>
+        </View>
+      </View>
     </View>
   );
 }
@@ -250,7 +246,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   overlay: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'space-between',
   },
   header: {

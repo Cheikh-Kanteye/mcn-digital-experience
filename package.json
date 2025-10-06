@@ -1,5 +1,5 @@
 {
-  "name": "bolt-expo-starter",
+  "name": "mcn-digital-experience",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "private": true,
@@ -17,7 +17,7 @@
     "@react-navigation/native": "^7.0.14",
     "@supabase/supabase-js": "^2.58.0",
     "expo": "^54.0.10",
-    "expo-av": "~16.0.7",
+    "expo-audio": "~1.0.13",
     "expo-blur": "~15.0.7",
     "expo-camera": "~17.0.8",
     "expo-constants": "~18.0.9",
@@ -39,6 +39,7 @@
     "react-native": "0.81.4",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-reanimated": "~4.1.1",
+  "react-native-worklets": "0.5.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-svg": "15.12.1",
@@ -50,5 +51,11 @@
     "@babel/core": "^7.25.2",
     "@types/react": "~19.1.10",
     "typescript": "~5.9.2"
+  }
+  ,
+  "pnpm": {
+    "overrides": {
+      "react-native-worklets": "0.5.1"
+    }
   }
 }

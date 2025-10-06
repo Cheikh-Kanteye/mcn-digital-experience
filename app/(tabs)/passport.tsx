@@ -1,9 +1,23 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import { BookmarkCheck, Heart, Calendar, Trash2 } from 'lucide-react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
+import {
+  BookmarkCheck,
+  Heart,
+  Calendar,
+  Trash2,
+  CreditCard,
+} from 'lucide-react-native';
 import { AfricanPattern } from '@/components/AfricanPattern';
 import { DataService } from '@/lib/dataService';
-import { getOrCreateUserId } from '@/lib/storage';
+import { useAuth } from '@/lib/authContext';
 import { useRouter } from 'expo-router';
 
 interface VisitedArtwork {
@@ -18,18 +32,27 @@ interface VisitedArtwork {
 export default function PassportScreen() {
   const [visitedArtworks, setVisitedArtworks] = useState<VisitedArtwork[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ total: 0, collected: 0, common: 0, rare: 0, legendary: 0 });
-  const [userId, setUserId] = useState<string>('');
+  const [stats, setStats] = useState({
+    total: 0,
+    collected: 0,
+    common: 0,
+    rare: 0,
+    legendary: 0,
+  });
+  const { user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    loadPassportData();
-  }, []);
+    if (user) {
+      loadPassportData();
+    }
+  }, [user]);
 
   const loadPassportData = async () => {
+    if (!user) return;
+
     try {
-      const uid = await getOrCreateUserId();
-      setUserId(uid);
+      const uid = user.id;
 
       const collectedArtworks = await DataService.getCollectedArtworks(uid);
       const passportEntries = await DataService.getPassportEntries(uid);
@@ -58,13 +81,13 @@ export default function PassportScreen() {
 
   const toggleFavorite = async (artworkId: string) => {
     const artwork = visitedArtworks.find((a) => a.id === artworkId);
-    if (!artwork || !userId) return;
+    if (!artwork || !user) return;
 
     try {
       const newFavoriteStatus = !artwork.favorite;
 
       await DataService.addOrUpdatePassportEntry({
-        user_id: userId,
+        user_id: user.id,
         artwork_id: artworkId,
         favorite: newFavoriteStatus,
         card_collected: true,
@@ -95,7 +118,10 @@ export default function PassportScreen() {
     <View style={styles.container}>
       <AfricanPattern variant="mudcloth" opacity={0.05} />
 
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <BookmarkCheck size={32} color="#a67c52" strokeWidth={1.5} />
@@ -113,7 +139,7 @@ export default function PassportScreen() {
             </View>
             <View style={styles.statCard}>
               <Text style={styles.statNumber}>
-                {visitedArtworks.filter(a => a.favorite).length}
+                {visitedArtworks.filter((a) => a.favorite).length}
               </Text>
               <Text style={styles.statLabel}>Favorites</Text>
             </View>
@@ -122,6 +148,19 @@ export default function PassportScreen() {
               <Text style={styles.statLabel}>Légendaires</Text>
             </View>
           </View>
+        </View>
+
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push('/collected-cards')}
+            activeOpacity={0.8}
+          >
+            <CreditCard size={20} color="#c9b8a8" strokeWidth={1.5} />
+            <Text style={styles.actionButtonText}>
+              Voir mes cartes collectées
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.artworksContainer}>
@@ -137,7 +176,8 @@ export default function PassportScreen() {
               <BookmarkCheck size={48} color="#8a7d70" strokeWidth={1.5} />
               <Text style={styles.emptyTitle}>Aucune œuvre scannée</Text>
               <Text style={styles.emptyText}>
-                Scannez votre première œuvre pour commencer votre voyage culturel
+                Scannez votre première œuvre pour commencer votre voyage
+                culturel
               </Text>
             </View>
           ) : (
@@ -147,7 +187,8 @@ export default function PassportScreen() {
                   key={artwork.id}
                   style={styles.artworkCard}
                   onPress={() => router.push(`/artwork/${artwork.id}`)}
-                  activeOpacity={0.8}>
+                  activeOpacity={0.8}
+                >
                   <Image
                     source={{ uri: artwork.image_url }}
                     style={styles.artworkImage}
@@ -167,7 +208,8 @@ export default function PassportScreen() {
                         onPress={(e) => {
                           e.stopPropagation();
                           toggleFavorite(artwork.id);
-                        }}>
+                        }}
+                      >
                         <Heart
                           size={18}
                           color={artwork.favorite ? '#a67c52' : '#6b5d50'}
@@ -179,7 +221,9 @@ export default function PassportScreen() {
                     <View style={styles.artworkFooter}>
                       <View style={styles.dateContainer}>
                         <Calendar size={12} color="#6b5d50" strokeWidth={1.5} />
-                        <Text style={styles.dateText}>{formatDate(artwork.scanned_at)}</Text>
+                        <Text style={styles.dateText}>
+                          {formatDate(artwork.scanned_at)}
+                        </Text>
                       </View>
                     </View>
                   </View>
@@ -193,7 +237,8 @@ export default function PassportScreen() {
           <View style={styles.shareCard}>
             <Text style={styles.shareTitle}>Partagez votre parcours</Text>
             <Text style={styles.shareText}>
-              Créez une carte visuelle élégante de vos découvertes et partagez-la avec vos proches
+              Créez une carte visuelle élégante de vos découvertes et
+              partagez-la avec vos proches
             </Text>
             <TouchableOpacity style={styles.shareButton}>
               <Text style={styles.shareButtonText}>Créer une carte</Text>
@@ -391,6 +436,25 @@ const styles = StyleSheet.create({
   },
   shareButtonText: {
     fontSize: 14,
+    fontWeight: '400',
+    color: '#c9b8a8',
+  },
+  actionsContainer: {
+    paddingHorizontal: 24,
+    marginTop: 24,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#151515',
+    borderRadius: 8,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#252525',
+    gap: 12,
+  },
+  actionButtonText: {
+    fontSize: 16,
     fontWeight: '400',
     color: '#c9b8a8',
   },

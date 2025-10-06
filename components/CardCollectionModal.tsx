@@ -1,18 +1,8 @@
 import { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-  ImageBackground,
-} from 'react-native';
-import { X, Sparkles } from 'lucide-react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
+import { X } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width } = Dimensions.get('window');
+import CollectedCard from './CollectedCard';
 
 interface Artwork {
   id: string;
@@ -22,7 +12,7 @@ interface Artwork {
   origin: string;
   rarity: 'common' | 'rare' | 'legendary';
   image_url: string;
-  collection: string;
+  collection_id: string;
 }
 
 interface CardCollectionModalProps {
@@ -34,34 +24,16 @@ interface CardCollectionModalProps {
 
 const rarityConfig = {
   common: {
-    label: 'COMMON',
-    color: '#d4a574',
-    textColor: '#d4a574',
-    borderColor: '#d4a574',
-    gradientColors: ['#4a3420', '#2a1d10'] as const,
     bgColor: '#3a2818',
-    glowColor: 'rgba(212, 165, 116, 0.4)',
-    pattern: require('@/assets/images/pattern-common.png'),
+    color: '#d4a574',
   },
   rare: {
-    label: 'RARE',
-    color: '#7ed957',
-    textColor: '#d4ff00',
-    borderColor: '#7ed957',
-    gradientColors: ['#1a3a20', '#0f2419'] as const,
     bgColor: '#1a3a2a',
-    glowColor: 'rgba(126, 217, 87, 0.6)',
-    pattern: require('@/assets/images/pattern-rare.png'),
+    color: '#7ed957',
   },
   legendary: {
-    label: 'LEGENDARY',
-    color: '#60a5fa',
-    textColor: '#ffd700',
-    borderColor: '#60a5fa',
-    gradientColors: ['#1a2e4a', '#0f1d35'] as const,
     bgColor: '#1a3a5a',
-    glowColor: 'rgba(96, 165, 250, 0.6)',
-    pattern: require('@/assets/images/pattern-legendary.png'),
+    color: '#60a5fa',
   },
 };
 
@@ -109,101 +81,7 @@ export default function CardCollectionModal({
         <View style={styles.modalContent}>
           {showCard && (
             <View style={styles.cardContainer}>
-              <View
-                style={[
-                  styles.card,
-                  {
-                    borderColor: config.borderColor,
-                    shadowColor: config.glowColor,
-                    backgroundColor: '#1a1a1a',
-                  },
-                ]}
-              >
-                {/* Pattern de fond en position absolue */}
-                <View style={styles.cardPatternContainer}>
-                  <ImageBackground
-                    source={config.pattern}
-                    style={styles.cardPattern}
-                    imageStyle={styles.cardPatternImage}
-                  />
-                </View>
-
-                {/* Contenu de la carte avec padding */}
-                <View style={styles.cardContent}>
-                  {/* Header avec "RARITY" */}
-                  <View style={styles.cardHeader}>
-                    <View style={styles.cornerDot} />
-                    <View style={styles.rarityBadgeTop}>
-                      <View style={styles.rarityDiamond}>
-                        <View
-                          style={[
-                            styles.rarityDiamondInner,
-                            { backgroundColor: config.color },
-                          ]}
-                        />
-                      </View>
-                      <Text
-                        style={[styles.rarityLabel, { color: config.color }]}
-                      >
-                        RARITY: {config.label}
-                      </Text>
-                      <View style={styles.rarityDiamond}>
-                        <View
-                          style={[
-                            styles.rarityDiamondInner,
-                            { backgroundColor: config.color },
-                          ]}
-                        />
-                      </View>
-                    </View>
-                    <View style={styles.cornerDot} />
-                  </View>
-
-                  {/* Titre du musée */}
-                  <Text style={styles.museumTitle}>
-                    MUSÉE DES CIVILISATIONS NOIRES
-                  </Text>
-
-                  {/* Image de l'artwork avec bordure lumineuse */}
-                  <View style={styles.artworkContainer}>
-                    <View
-                      style={[
-                        styles.artworkBorder,
-                        {
-                          borderColor: config.borderColor,
-                          shadowColor: config.color,
-                        },
-                      ]}
-                    >
-                      <Image
-                        source={{ uri: artwork.image_url }}
-                        style={styles.artworkImage}
-                        resizeMode="cover"
-                      />
-                    </View>
-                  </View>
-
-                  {/* Informations de l'artwork */}
-                  <View style={styles.artworkInfo}>
-                    <Text style={styles.artworkTitle}>{artwork.title}</Text>
-                    <Text style={styles.artworkSubtitle}>
-                      {artwork.origin}, {artwork.epoch}
-                    </Text>
-                  </View>
-
-                  {/* Footer avec propriétaire */}
-                  <View style={styles.cardFooter}>
-                    <View style={styles.cornerDot} />
-                    <View style={styles.ownerSection}>
-                      <Text style={styles.ownerLabel}>PROPRIÉTAIRE:</Text>
-                      <Text style={styles.ownerName}>
-                        NOM DU COLLECTIONNEUR
-                      </Text>
-                    </View>
-                    <View style={styles.cornerDot} />
-                  </View>
-                </View>
-              </View>
+              <CollectedCard artwork={artwork} />
             </View>
           )}
 
