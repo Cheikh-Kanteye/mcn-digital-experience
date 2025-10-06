@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Image,
+  StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Crown, ArrowRight, Search } from 'lucide-react-native';
@@ -36,15 +37,6 @@ export default function CollectionsScreen() {
   const [featuredCollection, setFeaturedCollection] =
     useState<FeaturedCollection | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('Toutes');
-
-  const categories = [
-    'Toutes',
-    'Sculptures',
-    'Textil',
-    'Céramiques',
-    'Masques',
-  ];
 
   useEffect(() => {
     loadCollections();
@@ -100,45 +92,10 @@ export default function CollectionsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Collections</Text>
-        <TouchableOpacity style={styles.searchButton}>
-          <Search size={24} color="#fff" strokeWidth={2} />
-        </TouchableOpacity>
-      </View>
-
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        {/* Filtres catégories */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesContainer}
-        >
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryButton,
-                selectedCategory === category && styles.categoryButtonActive,
-              ]}
-              onPress={() => setSelectedCategory(category)}
-            >
-              <Text
-                style={[
-                  styles.categoryText,
-                  selectedCategory === category && styles.categoryTextActive,
-                ]}
-              >
-                {category}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
         {/* Carte collection vedette */}
         {featuredCollection && (
           <TouchableOpacity
@@ -247,7 +204,8 @@ export default function CollectionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background.primary,
+    backgroundColor: theme.colors.background.dark,
+    paddingTop: 10,
   },
   loadingContainer: {
     flex: 1,

@@ -1,0 +1,145 @@
+{
+  "brand": {
+    "short": "MCN",
+    "full": "Museum of Black Civilizations"
+  },
+  "header": {
+    "museumText": "Official Shop",
+    "profileAlt": "Profile"
+  },
+  "hero": {
+    "title": "MCN Shop",
+    "subtitle": "Discover our exclusive collection of African art"
+  },
+  "categories": {
+    "title": "Categories",
+    "empty": "No categories"
+  },
+  "products": {
+    "featured": "Featured Products",
+    "results": "Results",
+    "viewAll": "View all",
+    "addToCart": "Add to cart"
+  },
+  "offer": {
+    "title": "Welcome Offer",
+    "subtitle": "-20% on your first order",
+    "button": "Enjoy the offer"
+  },
+  "currency": {
+    "EUR": "EUR",
+    "USD": "USD",
+    "XOF": "XOF"
+  },
+  "auth": {
+    "title": "Museum of Civilizations",
+    "footer": "© 2024 Museum of Black Civilizations"
+  },
+  "scanner": {
+    "permissionPrompt": "To scan museum artworks, we need access to"
+  },
+  "index": {
+    "heroText": "MCN celebrates the richness and diversity of African civilizations through the ages."
+  },
+  "collectedCard": {
+    "museumTitle": "MUSEUM OF BLACK CIVILIZATIONS"
+  },
+  "artwork": {
+    "shareMessage": "Discover \"{{title}}\" - {{artist}}\n\nPeriod: {{epoch}}\nOrigin: {{origin}}\n\nSee in the Museum app"
+  },
+  "misc": {
+    "seeApp": "See in the Museum app"
+  },
+  "collection_page": {
+    "notFound": "Collection not found",
+    "worksLabel": "Works",
+    "allWorks": "All works"
+  },
+  "collected_cards": {
+    "title": "My Collected Cards",
+    "emptyTitle": "No collected cards",
+    "emptySubtitle": "Scan artworks to start your collection",
+    "resetButton": "Back to grid",
+    "cardSaved": "Card saved",
+    "cardRemoved": "Card removed"
+  },
+  "auth_pages": {
+    "login": {
+      "title": "Museum of Civilizations",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "loginButton": "Log in",
+      "loggingIn": "Logging in...",
+      "forgotPassword": "Forgot password?",
+      "continueWithGoogle": "Continue with Google",
+      "signupLink": "Sign up",
+      "googleComingSoon": "Google login coming soon"
+    },
+    "signup": {
+      "title": "Museum of Civilizations",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "passwordConfirmLabel": "Confirm password",
+      "signupButton": "Sign up",
+      "signingUp": "Signing up...",
+      "signupWithGoogle": "Sign up with Google",
+      "loginLink": "Log in",
+      "successCheckEmail": "Check your email to confirm your account",
+      "googleSignupInfo": "Sign up with Google coming soon"
+    }
+  },
+  "scanner_page": {
+    "title": "Scan an artwork",
+    "permissionPrompt": "To scan museum artworks, we need access to",
+    "permissionTitle": "Camera Access",
+    "scanButton": "Scan",
+    "cameraRequired": "Camera is required to scan"
+  },
+  "passport_page": {
+    "title": "Visitor Passport",
+    "seeCollectedCards": "See my collected cards",
+    "addedToPassport": "Added to Passport",
+    "addToPassport": "Add to Passport"
+  },
+  "passport_ui": {
+    "journeyIntro": "Your journey through the civilizations",
+    "worksLabel": "Works",
+    "collectedLabel": "collected",
+    "legendaryLabel": "Legendary",
+    "collectedSectionTitle": "Collected works",
+    "emptyScanned": "No scanned artworks",
+    "scanFirst": "Scan your first artwork to start your journey",
+    "createCard": "Create a card",
+    "createCardSubtitle": "Create an elegant visual card of your discoveries and share it",
+    "shareButton": "Create a card"
+  },
+  "collections_page": {
+    "filtersTitle": "Category filters",
+    "collectionDescriptions": {
+      "1": "Discover the great African civilizations and their systems of governance",
+      "2": "Explore the richness of African artistic and textile creations",
+      "3": "Dive into the spiritual and ritual practices of the continent",
+      "4": "Celebrate African musical diversity across the ages"
+    },
+    "guidedTourTitle": "Guided tour",
+    "guidedTourText": "Follow a thematic route through the collections. Each artwork tells a unique story of African heritage.",
+    "featuredCollectionDesc": "Discover symbols of power and the regalia of great African kingdoms",
+    "artworksCount": "{{count}} artworks"
+  },
+  "artwork_page": {
+    "addToPassport": "Add to Passport",
+    "addedToPassport": "✓ Added to Passport",
+    "shareError": "Unable to share right now",
+    "epochLabel": "Period:",
+    "technicalDetails": "Technical details",
+    "materials": "Materials",
+    "similarWorks": "Similar works",
+    "durationLabel": "Duration:",
+    "notFound": "Artwork not found"
+  },
+  "buttons": {
+    "viewAll": "View all",
+    "profitOffer": "Enjoy the offer",
+    "gridHint": "Tap \"Grid\" to review your collection"
+  }
+}

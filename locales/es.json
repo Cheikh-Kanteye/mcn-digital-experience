@@ -1,0 +1,145 @@
+{
+  "brand": {
+    "short": "MCN",
+    "full": "Museo de las Civilizaciones Negras"
+  },
+  "header": {
+    "museumText": "Tienda Oficial",
+    "profileAlt": "Perfil"
+  },
+  "hero": {
+    "title": "Tienda MCN",
+    "subtitle": "Descubre nuestra colección exclusiva de arte africano"
+  },
+  "categories": {
+    "title": "Categorías",
+    "empty": "Sin categorías"
+  },
+  "products": {
+    "featured": "Productos Destacados",
+    "results": "Resultados",
+    "viewAll": "Ver todo",
+    "addToCart": "Agregar al carrito"
+  },
+  "offer": {
+    "title": "Oferta de Bienvenida",
+    "subtitle": "-20% en tu primer pedido",
+    "button": "Aprovechar la oferta"
+  },
+  "currency": {
+    "EUR": "EUR",
+    "USD": "USD",
+    "XOF": "XOF"
+  },
+  "auth": {
+    "title": "Museo de las Civilizaciones",
+    "footer": "© 2024 Museo de las Civilizaciones Negras"
+  },
+  "scanner": {
+    "permissionPrompt": "Para escanear las obras del museo, necesitamos acceso a"
+  },
+  "index": {
+    "heroText": "El MCN celebra la riqueza y la diversidad de las civilizaciones africanas a lo largo de los siglos."
+  },
+  "collectedCard": {
+    "museumTitle": "MUSEO DE LAS CIVILIZACIONES NEGRAS"
+  },
+  "artwork": {
+    "shareMessage": "Descubre \"{{title}}\" - {{artist}}\n\nÉpoca: {{epoch}}\nOrigen: {{origin}}\n\nVer en la aplicación del Museo"
+  },
+  "misc": {
+    "seeApp": "Ver en la aplicación del Museo"
+  },
+  "collection_page": {
+    "notFound": "Colección no encontrada",
+    "worksLabel": "Obras",
+    "allWorks": "Todas las obras"
+  },
+  "collected_cards": {
+    "title": "Mis Tarjetas Coleccionadas",
+    "emptyTitle": "No hay tarjetas coleccionadas",
+    "emptySubtitle": "Escanea obras para comenzar tu colección",
+    "resetButton": "Volver a la cuadrícula",
+    "cardSaved": "Tarjeta guardada",
+    "cardRemoved": "Tarjeta eliminada"
+  },
+  "auth_pages": {
+    "login": {
+      "title": "Museo de las Civilizaciones",
+      "emailLabel": "Correo electrónico",
+      "passwordLabel": "Contraseña",
+      "loginButton": "Iniciar sesión",
+      "loggingIn": "Iniciando sesión...",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "continueWithGoogle": "Continuar con Google",
+      "signupLink": "Registrarse",
+      "googleComingSoon": "Inicio de sesión con Google próximamente"
+    },
+    "signup": {
+      "title": "Museo de las Civilizaciones",
+      "emailLabel": "Correo electrónico",
+      "passwordLabel": "Contraseña",
+      "passwordConfirmLabel": "Confirmar contraseña",
+      "signupButton": "Registrarse",
+      "signingUp": "Registrando...",
+      "signupWithGoogle": "Registrarse con Google",
+      "loginLink": "Iniciar sesión",
+      "successCheckEmail": "Revisa tu correo para confirmar tu cuenta",
+      "googleSignupInfo": "Registro con Google próximamente"
+    }
+  },
+  "scanner_page": {
+    "title": "Escanear una obra",
+    "permissionPrompt": "Para escanear las obras del museo, necesitamos acceso a",
+    "permissionTitle": "Acceso a la cámara",
+    "scanButton": "Escanear",
+    "cameraRequired": "La cámara es necesaria para escanear"
+  },
+  "passport_page": {
+    "title": "Pasaporte del visitante",
+    "seeCollectedCards": "Ver mis tarjetas coleccionadas",
+    "addedToPassport": "Agregado al Pasaporte",
+    "addToPassport": "Agregar al Pasaporte"
+  },
+  "passport_ui": {
+    "journeyIntro": "Tu viaje a través de las civilizaciones",
+    "worksLabel": "Obras",
+    "collectedLabel": "coleccionadas",
+    "legendaryLabel": "Legendarias",
+    "collectedSectionTitle": "Obras coleccionadas",
+    "emptyScanned": "No hay obras escaneadas",
+    "scanFirst": "Escanea tu primera obra para comenzar tu viaje",
+    "createCard": "Crear una tarjeta",
+    "createCardSubtitle": "Crea una tarjeta visual elegante de tus descubrimientos y compártela",
+    "shareButton": "Crear una tarjeta"
+  },
+  "collections_page": {
+    "filtersTitle": "Filtros de categorías",
+    "collectionDescriptions": {
+      "1": "Descubre las grandes civilizaciones africanas y sus sistemas de gobierno",
+      "2": "Explora la riqueza de las creaciones artísticas y textiles africanas",
+      "3": "Sumérgete en las prácticas espirituales y rituales del continente",
+      "4": "Celebra la diversidad musical africana a través de los siglos"
+    },
+    "guidedTourTitle": "Visita guiada",
+    "guidedTourText": "Sigue una ruta temática a través de las colecciones. Cada obra cuenta una historia única del patrimonio africano.",
+    "featuredCollectionDesc": "Descubre los símbolos de poder y las insignias de los grandes reinos africanos",
+    "artworksCount": "{{count}} obras"
+  },
+  "artwork_page": {
+    "addToPassport": "Agregar al Pasaporte",
+    "addedToPassport": "✓ Agregado al Pasaporte",
+    "shareError": "No es posible compartir en este momento",
+    "epochLabel": "Época:",
+    "technicalDetails": "Detalles técnicos",
+    "materials": "Materiales",
+    "similarWorks": "Obras similares",
+    "durationLabel": "Duración:",
+    "notFound": "Obra no encontrada"
+  },
+  "buttons": {
+    "viewAll": "Ver todo",
+    "profitOffer": "Aprovechar la oferta",
+    "gridHint": "Pulsa \"Cuadrícula\" para revisar tu colección"
+  }
+}

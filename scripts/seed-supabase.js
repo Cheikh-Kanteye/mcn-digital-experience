@@ -20,64 +20,79 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function seed() {
   const categories = [
-    { id: 1, name: 'Masques', description: 'Masques et rituels' },
-    { id: 2, name: 'Textiles', description: 'Tissus et vêtements' },
-    { id: 3, name: 'Sculptures', description: 'Bronze et bois sculpté' },
-    { id: 4, name: 'Instruments', description: 'Instruments de musique' },
+    {
+      id: 1,
+      name: 'Livres',
+      description: 'Ouvrages et essais sur les civilisations',
+    },
+    { id: 2, name: 'Éditions', description: 'Tirages et estampes artistiques' },
+    {
+      id: 3,
+      name: 'Créations partenaires',
+      description: "Objets et œuvres d'art fournis par nos partenaires",
+    },
+    {
+      id: 4,
+      name: 'Musique',
+      description: 'Enregistrements et albums partenaires',
+    },
   ];
 
   const products = [
     {
       id: 1,
-      name: 'Masque Dogon',
-      origin: 'Mali - XIXe siècle',
-      price_eur: 450,
+      name: "Histoire des royaumes d'Afrique",
+      origin: 'Édition partenaire',
+      price_eur: 29.9,
       category_id: 1,
       image_url:
-        'https://images.unsplash.com/photo-1523381211284-0f7f2e9b12b9?auto=format&fit=crop&w=800&q=80',
-      description: 'Masque rituel traditionnel du peuple Dogon',
+        'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80',
+      description:
+        'Un essai illustré sur les grandes civilisations africaines.',
     },
     {
       id: 2,
-      name: 'Tissu Kente',
-      origin: 'Ghana - Artisanat',
-      price_eur: 120,
+      name: 'Tirage - Masque traditionnel (50 ex.)',
+      origin: 'Impression partenaire',
+      price_eur: 75,
       category_id: 2,
       image_url:
-        'https://images.unsplash.com/photo-1542224566-3e8ea1a8f7c0?auto=format&fit=crop&w=800&q=80',
-      description: 'Tissu Kente artisanal aux motifs colorés',
+        'https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=800&q=80',
+      description:
+        'Estampe en édition limitée imprimée par un atelier partenaire.',
     },
     {
       id: 3,
-      name: 'Sculpture Bronze',
-      origin: 'Bénin - Art contemporain',
-      price_eur: 890,
-      category_id: 3,
+      name: "Série 'Racines' - Print d'artiste",
+      origin: 'Création partenaire',
+      price_eur: 120,
+      category_id: 2,
       image_url:
-        'https://images.unsplash.com/photo-1602524815535-e6c2b0c3d7d6?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80',
       description:
-        'Sculpture en bronze moderne inspirée des traditions ouest-africaines',
+        "Print d'artiste réalisé en collaboration avec un créateur contemporain.",
     },
     {
       id: 4,
-      name: 'Couronne Royale Ashanti',
-      origin: 'Ghana - Patrimoine',
-      price_eur: 1500,
-      category_id: 3,
+      name: 'Album - Rythmes du Sahel',
+      origin: 'Label partenaire',
+      price_eur: 14.99,
+      category_id: 4,
       image_url:
-        'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=800&q=80',
-      description: 'Couronne royale décorée de symboles traditionnels',
+        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80',
+      description:
+        "Compilation d'artistes contemporains influencés par les rythmes traditionnels.",
     },
     {
       id: 5,
-      name: 'Tambour Djembé',
-      origin: 'Mali - Instrument',
-      price_eur: 250,
-      category_id: 4,
+      name: 'Affiche - Festival des Arts',
+      origin: 'Atelier partenaire',
+      price_eur: 25,
+      category_id: 3,
       image_url:
-        'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=800&q=80',
       description:
-        'Tambour traditionnel, parfait pour cérémonies et spectacles',
+        'Affiche officielle reproduite par nos partenaires du festival.',
     },
   ];
 

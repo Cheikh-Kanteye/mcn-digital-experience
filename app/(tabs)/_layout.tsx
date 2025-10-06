@@ -1,8 +1,7 @@
 import { Tabs, Redirect } from 'expo-router';
-import { View } from 'react-native';
+import { View, Pressable } from 'react-native';
 import {
   Hop as Home,
-  Camera,
   Bookmark,
   Compass,
   ShoppingBag,
@@ -10,6 +9,8 @@ import {
 } from 'lucide-react-native';
 import { useAuth } from '@/lib/authContext';
 import { ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { theme } from '@/lib/theme';
 
 export default function TabLayout() {
   const { user, loading } = useAuth();
@@ -35,8 +36,20 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerStyle: { backgroundColor: theme.colors.background.dark },
+        headerTintColor: '#c9b8a8',
+        headerTitleStyle: { color: '#c9b8a8' },
+        headerRight: () => (
+          <Pressable
+            onPress={() => navigation.navigate('passport')}
+            style={{ paddingHorizontal: 12 }}
+            accessibilityLabel="Ouvrir le profil"
+          >
+            <Ionicons name="person-circle-outline" size={28} color="#c9b8a8" />
+          </Pressable>
+        ),
         tabBarStyle: {
           backgroundColor: '#0a0a0a',
           borderTopColor: '#252525',
@@ -52,7 +65,7 @@ export default function TabLayout() {
           fontWeight: '400',
           marginTop: 4,
         },
-      }}
+      })}
     >
       <Tabs.Screen
         name="index"

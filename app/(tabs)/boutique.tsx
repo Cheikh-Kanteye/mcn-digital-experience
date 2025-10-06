@@ -105,7 +105,7 @@ export default function BoutiqueScreen() {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Text style={styles.logoText}>MCN</Text>
-            <Text style={styles.museumText}>Boutique Officielle</Text>
+            <Text style={styles.museumText}>Boutique partenaires</Text>
           </View>
           <View style={styles.headerRight}>
             <View style={styles.currencySelector}>
@@ -129,13 +129,6 @@ export default function BoutiqueScreen() {
                 </TouchableOpacity>
               ))}
             </View>
-            <TouchableOpacity style={styles.profileButton}>
-              <Ionicons
-                name="person"
-                size={20}
-                color={theme.colors.background.dark}
-              />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -148,9 +141,10 @@ export default function BoutiqueScreen() {
               color={theme.colors.accent.primary}
             />
           </View>
-          <Text style={styles.heroTitle}>Collection Exclusive</Text>
+          <Text style={styles.heroTitle}>Sélection partenaires</Text>
           <Text style={styles.heroSubtitle}>
-            Art africain authentique et artisanat traditionnel
+            Livres, éditions et créations d'artistes proposés par nos
+            partenaires
           </Text>
         </View>
 
@@ -224,7 +218,7 @@ export default function BoutiqueScreen() {
         <View style={styles.productsHeader}>
           <View>
             <Text style={styles.sectionTitle}>
-              {selectedCategory ? 'Résultats' : 'Produits Vedettes'}
+              {selectedCategory ? 'Résultats' : 'Produits partenaires'}
             </Text>
             <Text style={styles.productsCount}>
               {filteredProducts.length} produit
@@ -255,7 +249,9 @@ export default function BoutiqueScreen() {
               size={64}
               color={theme.colors.text.tertiary}
             />
-            <Text style={styles.emptyText}>Aucun produit disponible</Text>
+            <Text style={styles.emptyText}>
+              Aucun produit partenaire disponible
+            </Text>
           </View>
         ) : (
           <View style={styles.productsGrid}>
@@ -380,7 +376,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: theme.spacing.lg,
-    paddingTop: Platform.OS === 'ios' ? 60 : 48,
+    paddingTop: 10,
     paddingBottom: theme.spacing.md,
   } as ViewStyle,
   headerLeft: {

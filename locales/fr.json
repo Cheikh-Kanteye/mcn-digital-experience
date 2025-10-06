@@ -1,0 +1,148 @@
+{
+  "brand": {
+    "short": "MCN",
+    "full": "Musée des Civilisations Noires"
+  },
+  "header": {
+    "museumText": "Boutique Officielle",
+    "profileAlt": "Profil"
+  },
+  "hero": {
+    "title": "Boutique MCN",
+    "subtitle": "Découvrez notre collection exclusive d'art africain"
+  },
+  "categories": {
+    "title": "Catégories",
+    "empty": "Aucune catégorie"
+  },
+  "products": {
+    "featured": "Produits Vedettes",
+    "results": "Résultats",
+    "viewAll": "Voir tout",
+    "addToCart": "Ajouter au panier"
+  },
+  "offer": {
+    "title": "Offre de Bienvenue",
+    "subtitle": "-20% sur votre première commande",
+    "button": "Profiter de l'offre"
+  },
+  "currency": {
+    "EUR": "EUR",
+    "USD": "USD",
+    "XOF": "XOF"
+  },
+  "auth": {
+    "title": "Musée des Civilisations",
+    "footer": "© 2024 Musée des Civilisations Noires"
+  },
+  "scanner": {
+    "permissionPrompt": "Pour scanner les œuvres du musée, nous avons besoin d'accéder à"
+  },
+  "index": {
+    "heroText": "Le MCN célèbre la richesse et la diversité des civilisations africaines à travers les âges."
+  },
+  "collectedCard": {
+    "museumTitle": "MUSÉE DES CIVILISATIONS NOIRES"
+  },
+  "artwork": {
+    "shareMessage": "Découvrez \"{{title}}\" - {{artist}}\n\nÉpoque: {{epoch}}\nOrigine: {{origin}}\n\nVoir sur l'application Musée"
+  },
+  "misc": {
+    "seeApp": "Voir sur l'application Musée"
+  }
+  ,
+  "collection_page": {
+    "notFound": "Collection non trouvée",
+    "worksLabel": "Œuvres",
+    "allWorks": "Toutes les œuvres"
+  },
+  "collected_cards": {
+    "title": "Mes Cartes Collectées",
+    "emptyTitle": "Aucune carte collectée",
+    "emptySubtitle": "Scannez des œuvres pour commencer votre collection",
+    "resetButton": "Retour à la grille",
+    "cardSaved": "Carte conservée",
+    "cardRemoved": "Carte retirée"
+  },
+  "auth_pages": {
+    "login": {
+      "title": "Musée des Civilisations",
+      "emailLabel": "Email",
+      "passwordLabel": "Mot de passe",
+      "loginButton": "Se connecter",
+      "loggingIn": "Connexion...",
+      "forgotPassword": "Mot de passe oublié ?",
+      "continueWithGoogle": "Continuer avec Google",
+      "signupLink": "S'inscrire",
+      "googleComingSoon": "Connexion avec Google à venir"
+    },
+    "signup": {
+      "title": "Musée des Civilisations",
+      "emailLabel": "Email",
+      "passwordLabel": "Mot de passe",
+      "passwordConfirmLabel": "Confirmer le mot de passe",
+      "signupButton": "S'inscrire",
+      "signingUp": "Inscription...",
+      "signupWithGoogle": "S'inscrire avec Google",
+      "loginLink": "Se connecter",
+      "successCheckEmail": "Vérifiez votre email pour confirmer votre compte",
+      "googleSignupInfo": "Inscription avec Google à venir"
+    }
+  },
+  "scanner_page": {
+    "title": "Scanner une œuvre",
+    "permissionPrompt": "Pour scanner les œuvres du musée, nous avons besoin d'accéder à",
+    "permissionTitle": "Accès à la caméra",
+    "scanButton": "Scanner",
+    "cameraRequired": "La caméra est requise pour scanner"
+  },
+  "passport_page": {
+    "title": "Passeport du visiteur",
+    "seeCollectedCards": "Voir mes cartes collectées",
+    "addedToPassport": "Ajouté au Passeport",
+    "addToPassport": "Ajouter au Passeport"
+  },
+  "passport_ui": {
+    "journeyIntro": "Votre voyage à travers les civilisations",
+    "worksLabel": "Œuvres",
+    "collectedLabel": "collectées",
+    "legendaryLabel": "Légendaires",
+    "collectedSectionTitle": "Œuvres collectées",
+    "emptyScanned": "Aucune œuvre scannée",
+    "scanFirst": "Scannez votre première œuvre pour commencer votre voyage",
+    "createCard": "Créer une carte",
+    "createCardSubtitle": "Créez une carte visuelle élégante de vos découvertes et partagez-la",
+    "shareButton": "Créer une carte"
+  },
+  "collections_page": {
+    "filtersTitle": "Filtres catégories",
+    "collectionDescriptions": {
+      "1": "Découvrez les grandes civilisations africaines et leurs systèmes de gouvernance",
+      "2": "Explorez la richesse des créations artistiques et textiles africaines",
+      "3": "Plongez dans les pratiques spirituelles et rituelles du continent",
+      "4": "Célébrez la diversité musicale africaine à travers les âges"
+    }
+    ,
+    "guidedTourTitle": "Visite guidée",
+    "guidedTourText": "Suivez un parcours thématique à travers les collections. Chaque œuvre raconte une histoire unique du patrimoine africain.",
+    "featuredCollectionDesc": "Découvrez les symboles du pouvoir et les regalia des grands royaumes africains",
+    "artworksCount": "{{count}} œuvres"
+  },
+  "artwork_page": {
+    "addToPassport": "Ajouter au Passeport",
+    "addedToPassport": "✓ Ajouté au Passeport",
+    "shareError": "Impossible de partager pour le moment"
+    ,
+    "epochLabel": "Époque:",
+    "technicalDetails": "Détails Techniques",
+    "materials": "Matériaux",
+    "similarWorks": "Œuvres Similaires",
+    "durationLabel": "Durée:",
+    "notFound": "Œuvre non trouvée"
+  },
+  "buttons": {
+    "viewAll": "Voir tout",
+    "profitOffer": "Profiter de l'offre",
+    "gridHint": "Appuyez sur \"Grille\" pour revoir votre collection"
+  }
+}
