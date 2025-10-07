@@ -11,6 +11,8 @@ import { useAuth } from '@/lib/authContext';
 import { ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/lib/theme';
+import CartModal from '@/components/CartModal';
+import CartButton from '@/components/CartButton';
 
 export default function TabLayout() {
   const { user, loading } = useAuth();
@@ -35,103 +37,112 @@ export default function TabLayout() {
   }
 
   return (
-    <Tabs
-      screenOptions={({ navigation }) => ({
-        headerShown: true,
-        headerStyle: { backgroundColor: theme.colors.background.dark },
-        headerTintColor: '#c9b8a8',
-        headerTitleStyle: { color: '#c9b8a8' },
-        headerRight: () => (
-          <Pressable
-            onPress={() => navigation.navigate('passport')}
-            style={{ paddingHorizontal: 12 }}
-            accessibilityLabel="Ouvrir le profil"
-          >
-            <Ionicons name="person-circle-outline" size={28} color="#c9b8a8" />
-          </Pressable>
-        ),
-        tabBarStyle: {
-          backgroundColor: '#0a0a0a',
-          borderTopColor: '#252525',
-          borderTopWidth: 1,
-          paddingTop: 8,
-          paddingBottom: 8,
-          height: 65,
-        },
-        tabBarActiveTintColor: '#c9b8a8',
-        tabBarInactiveTintColor: '#6b5d50',
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '400',
-          marginTop: 4,
-        },
-      })}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Accueil',
-          tabBarIcon: ({ size, color }) => (
-            <Home size={size} color={color} strokeWidth={1.5} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="collections"
-        options={{
-          title: 'Collections',
-          tabBarIcon: ({ size, color }) => (
-            <Compass size={size} color={color} strokeWidth={1.5} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="scanner"
-        options={{
-          title: '',
-          tabBarShowLabel: false,
-          tabBarIcon: ({ size, color }) => (
-            <View
-              style={{
-                position: 'absolute',
-                width: 50,
-                height: 50,
-                borderRadius: 30,
-                backgroundColor: '#a67c52bb',
-                borderWidth: 2,
-                borderColor: '#a67c52',
-                justifyContent: 'center',
-                alignItems: 'center',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.3,
-                shadowRadius: 4,
-                elevation: 5,
-              }}
+    <>
+      <Tabs
+        screenOptions={({ navigation }) => ({
+          headerShown: true,
+          headerStyle: { backgroundColor: theme.colors.background.dark },
+          headerTintColor: '#c9b8a8',
+          headerTitleStyle: { color: '#c9b8a8' },
+          headerRight: () => (
+            <Pressable
+              onPress={() => navigation.navigate('passport')}
+              style={{ paddingHorizontal: 12 }}
+              accessibilityLabel="Ouvrir le profil"
             >
-              <QrCode size={24} color="#ffffffff" strokeWidth={2} />
-            </View>
+              <Ionicons
+                name="person-circle-outline"
+                size={28}
+                color="#c9b8a8"
+              />
+            </Pressable>
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="passport"
-        options={{
-          title: 'Passeport',
-          tabBarIcon: ({ size, color }) => (
-            <Bookmark size={size} color={color} strokeWidth={1.5} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="boutique"
-        options={{
-          title: 'Boutique',
-          tabBarIcon: ({ size, color }) => (
-            <ShoppingBag size={size} color={color} strokeWidth={1.5} />
-          ),
-        }}
-      />
-    </Tabs>
+          tabBarStyle: {
+            backgroundColor: '#0a0a0a',
+            borderTopColor: '#252525',
+            borderTopWidth: 1,
+            paddingTop: 8,
+            paddingBottom: 8,
+            height: 65,
+          },
+          tabBarActiveTintColor: '#c9b8a8',
+          tabBarInactiveTintColor: '#6b5d50',
+          tabBarLabelStyle: {
+            fontSize: 10,
+            fontWeight: '400',
+            marginTop: 4,
+          },
+        })}
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Accueil',
+            tabBarIcon: ({ size, color }) => (
+              <Home size={size} color={color} strokeWidth={1.5} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="collections"
+          options={{
+            title: 'Collections',
+            tabBarIcon: ({ size, color }) => (
+              <Compass size={size} color={color} strokeWidth={1.5} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="scanner"
+          options={{
+            title: '',
+            tabBarShowLabel: false,
+            tabBarIcon: ({ size, color }) => (
+              <View
+                style={{
+                  position: 'absolute',
+                  width: 50,
+                  height: 50,
+                  borderRadius: 30,
+                  backgroundColor: '#a67c52bb',
+                  borderWidth: 2,
+                  borderColor: '#a67c52',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 5,
+                }}
+              >
+                <QrCode size={24} color="#ffffffff" strokeWidth={2} />
+              </View>
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="passport"
+          options={{
+            title: 'Passeport',
+            tabBarIcon: ({ size, color }) => (
+              <Bookmark size={size} color={color} strokeWidth={1.5} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="boutique"
+          options={{
+            title: 'Boutique',
+            tabBarIcon: ({ size, color }) => (
+              <ShoppingBag size={size} color={color} strokeWidth={1.5} />
+            ),
+          }}
+        />
+      </Tabs>
+
+      {/* Render cart modal globally (modal must stay at app root) */}
+      <CartModal />
+    </>
   );
 }

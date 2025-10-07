@@ -14,7 +14,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/lib/theme';
 import { useEffect, useState } from 'react';
+import { useCartStore } from '@/lib/cartStore';
 import { supabase } from '@/lib/supabase';
+import CartButton from '@/components/CartButton';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - theme.spacing.lg * 3) / 2;
@@ -25,6 +28,9 @@ export default function BoutiqueScreen() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState<'EUR' | 'USD' | 'XOF'>('EUR');
+  const setCartCurrency = useCartStore((s) => s.setCurrency);
+  const addToCart = useCartStore((s) => s.add);
+  const router = useRouter();
 
   const RATES = {
     EUR: 1,
@@ -112,7 +118,10 @@ export default function BoutiqueScreen() {
               {(['EUR', 'USD', 'XOF'] as const).map((cur) => (
                 <TouchableOpacity
                   key={cur}
-                  onPress={() => setCurrency(cur)}
+                  onPress={() => {
+                    setCurrency(cur);
+                    setCartCurrency(cur);
+                  }}
                   style={[
                     styles.currencyButton,
                     currency === cur && styles.currencyButtonActive,
@@ -262,6 +271,7 @@ export default function BoutiqueScreen() {
                   key={String(product.id)}
                   style={styles.productCard}
                   activeOpacity={0.8}
+                  onPress={() => router.push(`/boutique/${product.id}`)}
                 >
                   <View style={styles.productImageContainer}>
                     {product.image_url ? (
@@ -304,6 +314,19 @@ export default function BoutiqueScreen() {
                       <TouchableOpacity
                         style={styles.addToCartButton}
                         activeOpacity={0.7}
+                        onPress={() =>
+                          addToCart(
+                            {
+                              id: product.id,
+                              name: product.name,
+                              price_eur: Number(
+                                product.price_eur ?? product.price ?? 0
+                              ),
+                              image_url: product.image_url,
+                            },
+                            1
+                          )
+                        }
                       >
                         <Ionicons
                           name="add"
@@ -349,13 +372,13 @@ export default function BoutiqueScreen() {
         <View style={styles.bottomSpacer} />
       </ScrollView>
 
-      {/* Floating Cart Button */}
-      <TouchableOpacity style={styles.floatingCart} activeOpacity={0.9}>
-        <Ionicons name="cart" size={24} color={theme.colors.background.dark} />
-        <View style={styles.cartBadge}>
-          <Text style={styles.cartBadgeText}>3</Text>
-        </View>
-      </TouchableOpacity>
+      {/* Floating Cart Button (Boutique only) */}
+      <View
+        style={{ position: 'absolute', right: 20, bottom: 40, zIndex: 50 }}
+        pointerEvents="box-none"
+      >
+        <CartButton />
+      </View>
     </View>
   );
 }
