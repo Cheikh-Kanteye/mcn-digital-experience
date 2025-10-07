@@ -24,7 +24,7 @@ import { ArrowLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { AfricanPattern } from '@/components/AfricanPattern';
 import { DataService } from '@/lib/dataService';
-import { useAuth } from '@/lib/authContext';
+import { getOrCreateUserId } from '@/lib/storage';
 import CollectedCard from '@/components/CollectedCard';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -196,21 +196,19 @@ export default function CollectionsScreen() {
   const [collectedArtworks, setCollectedArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [viewMode, setViewMode] = useState<'swipe' | 'grid'>('grid');
-  const { user } = useAuth();
+  const [viewMode, setViewMode] = useState<'swipe' | 'grid'>('swipe');
+  const [userId, setUserId] = useState<string>('');
   const router = useRouter();
 
   useEffect(() => {
-    if (user) {
-      loadCollectedArtworks();
-    }
-  }, [user]);
+    loadCollectedArtworks();
+  }, []);
 
   const loadCollectedArtworks = async () => {
-    if (!user) return;
-
     try {
-      const artworks = await DataService.getCollectedArtworks(user.id);
+      const uid = await getOrCreateUserId();
+      setUserId(uid);
+      const artworks = await DataService.getCollectedArtworks(uid);
       setCollectedArtworks(artworks);
     } catch (error) {
       console.error('Error loading collected artworks:', error);
