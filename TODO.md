@@ -1,3 +1,0 @@
-- [ ] Import Camera from expo-camera in scanner.tsx
-- [ ] Add Camera.setAudioModeAsync call in useEffect
-- [ ] Restructure JSX: Move overlay outside CameraView with absolute positioning
